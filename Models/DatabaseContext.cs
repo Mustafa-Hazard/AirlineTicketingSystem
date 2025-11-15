@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Models.Entities;
+using AirlineTicketingSystem.Models.Entities;
 
-namespace Models
+namespace AirlineTicketingSystem.Models
 {
     public class DatabaseContext: DbContext
     {

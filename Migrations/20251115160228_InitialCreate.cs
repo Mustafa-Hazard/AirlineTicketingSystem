@@ -38,7 +38,8 @@ namespace AirlineTicketingSystem.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    First_Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Last_Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PassportNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Age = table.Column<int>(type: "int", nullable: false),
                     ContactEmail = table.Column<string>(type: "nvarchar(max)", nullable: false)

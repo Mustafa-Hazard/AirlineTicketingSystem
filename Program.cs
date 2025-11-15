@@ -1,4 +1,4 @@
-using Models;
+using AirlineTicketingSystem.Models;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel;
 
-namespace Models.Entities
+namespace AirlineTicketingSystem.Models.Entities
 {
     [Table("Bookings")]
     public class Booking
