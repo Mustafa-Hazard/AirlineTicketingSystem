@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using AirlineTicketingSystem.Models;
 using AirlineTicketingSystem.Models.Entities;
-namespace Controllers
+
+namespace AirlineTicketingSystem.Controllers
 {
     public class FlightsController : Controller
     {
@@ -13,10 +15,18 @@ namespace Controllers
         }
 
         // GET: Flights
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var flights = _context.Flights.ToList();
+            var flights = await _context.Flights.ToListAsync();
             return View(flights);
+        }
+
+        // GET: Flights/Details/5
+        public async Task<IActionResult> Details(int id)
+        {
+            var flight = await _context.Flights.FindAsync(id);
+            if (flight == null) return NotFound();
+            return View(flight);
         }
 
         // GET: Flights/Create
@@ -28,71 +38,78 @@ namespace Controllers
         // POST: Flights/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Flight flight)
+        public async Task<IActionResult> Create(Flight flight)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View(flight);
+
+            try
             {
-                _context.Flights.Add(flight);
-                _context.SaveChanges();
+                await _context.Flights.AddAsync(flight);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-
-            return View(flight);
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Error saving flight: {ex.Message}");
+                return View(flight);
+            }
         }
 
         // GET: Flights/Edit/5
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var flight = _context.Flights.FirstOrDefault(x => x.Id == id);
+            var flight = await _context.Flights.FindAsync(id);
             if (flight == null) return NotFound();
-
             return View(flight);
         }
 
         // POST: Flights/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Flight flight)
+        public async Task<IActionResult> Edit(Flight flight)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View(flight);
+
+            try
             {
                 _context.Flights.Update(flight);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-
-            return View(flight);
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Error updating flight: {ex.Message}");
+                return View(flight);
+            }
         }
 
         // GET: Flights/Delete/5
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var flight = _context.Flights.FirstOrDefault(x => x.Id == id);
+            var flight = await _context.Flights.FindAsync(id);
             if (flight == null) return NotFound();
-
             return View(flight);
         }
 
         // POST: Flights/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var flight = _context.Flights.FirstOrDefault(x => x.Id == id);
+            var flight = await _context.Flights.FindAsync(id);
             if (flight == null) return NotFound();
 
-            _context.Flights.Remove(flight);
-            _context.SaveChanges();
-            return RedirectToAction(nameof(Index));
-        }
-
-        // GET: Flights/Details/5
-        public IActionResult Details(int id)
-        {
-            var flight = _context.Flights.FirstOrDefault(x => x.Id == id);
-            if (flight == null) return NotFound();
-
-            return View(flight);
+            try
+            {
+                _context.Flights.Remove(flight);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Error deleting flight: {ex.Message}");
+                return View(flight);
+            }
         }
     }
 }
