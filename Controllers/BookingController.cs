@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using AirlineTicketingSystem.Models;
 using AirlineTicketingSystem.Models.Entities;
 
@@ -14,11 +17,28 @@ namespace AirlineTicketingSystem.Controllers
         }
 
         // GET: Booking
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var bookings = _context.Bookings
-                .ToList(); // you can include Flight & Passenger later using Include()
-            return View(bookings);
+            return View(await _context.Bookings.ToListAsync());
+        }
+
+        // GET: Booking/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var booking = await _context.Bookings
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            return View(booking);
         }
 
         // GET: Booking/Create
@@ -30,66 +50,104 @@ namespace AirlineTicketingSystem.Controllers
         // POST: Booking/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Booking booking)
+        public async Task<IActionResult> Create([Bind("Id,PassengerId,FlightId,BookingDate,SeatNumber")] Booking booking)
         {
             if (ModelState.IsValid)
             {
-                _context.Bookings.Add(booking);
-                _context.SaveChanges();
+                await _context.Bookings.AddAsync(booking);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(booking);
         }
 
         // GET: Booking/Edit/5
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int? id)
         {
-            var booking = _context.Bookings.FirstOrDefault(x => x.Id == id);
-            if (booking == null) return NotFound();
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var booking = await _context.Bookings.FindAsync(id);
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
             return View(booking);
         }
 
         // POST: Booking/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Booking booking)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,PassengerId,FlightId,BookingDate,SeatNumber")] Booking booking)
         {
+            if (id != booking.Id)
+            {
+                return NotFound();
+            }
+
             if (ModelState.IsValid)
             {
-                _context.Bookings.Update(booking);
-                _context.SaveChanges();
+                try
+                {
+                    _context.Update(booking);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!BookingExists(booking.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
                 return RedirectToAction(nameof(Index));
             }
+
             return View(booking);
         }
 
         // GET: Booking/Delete/5
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int? id)
         {
-            var booking = _context.Bookings.FirstOrDefault(x => x.Id == id);
-            if (booking == null) return NotFound();
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var booking = await _context.Bookings
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
             return View(booking);
         }
 
         // POST: Booking/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var booking = _context.Bookings.FirstOrDefault(x => x.Id == id);
-            if (booking == null) return NotFound();
-
-            _context.Bookings.Remove(booking);
-            _context.SaveChanges();
+            var booking = await _context.Bookings.FindAsync(id);
+            if (booking != null)
+            {
+                _context.Bookings.Remove(booking);
+                await _context.SaveChangesAsync();
+            }
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Booking/Details/5
-        public IActionResult Details(int id)
+        private bool BookingExists(int id)
         {
-            var booking = _context.Bookings.FirstOrDefault(x => x.Id == id);
-            if (booking == null) return NotFound();
-            return View(booking);
+            return _context.Bookings.Any(b => b.Id == id);
         }
     }
 }
