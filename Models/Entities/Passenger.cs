@@ -7,7 +7,7 @@ namespace AirlineTicketingSystem.Models.Entities
     [Table("Passengers")]
     public class Passenger
     {
-        [Column("Id")]
+        [Column("P_Id")]
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
@@ -15,11 +15,11 @@ namespace AirlineTicketingSystem.Models.Entities
         [Required]
         [Column("First_Name")]
         [Display(Name = "First Name")]
-        public string FirstName { get; set; } 
+        public string First_Name { get; set; } 
         
         [Column("Last_Name")]
         [Display(Name = "Surname")]
-        public string LastName { get; set; } 
+        public string Last_Name { get; set; } 
 
 
         [Required]
