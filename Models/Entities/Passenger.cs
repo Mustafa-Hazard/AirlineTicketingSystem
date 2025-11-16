@@ -18,7 +18,7 @@ namespace AirlineTicketingSystem.Models.Entities
         public string FirstName { get; set; } 
         
         [Column("Last_Name")]
-        [Display(Name = "Last Name")]
+        [Display(Name = "Surname")]
         public string LastName { get; set; } 
 
 
