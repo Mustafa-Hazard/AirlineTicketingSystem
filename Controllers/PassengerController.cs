@@ -14,7 +14,7 @@ namespace AirlineTicketingSystem.Controllers
         }
 
         // GET: Passenger
-        public IActionResult Index()
+        public async Task<IActionResult>  Index()
         {
             var passengers = _context.Passengers.ToList();
             return View(passengers);
@@ -29,65 +29,85 @@ namespace AirlineTicketingSystem.Controllers
         // POST: Passenger/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Passenger passenger)
+        public async Task<IActionResult> Create(Passenger passenger)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(passenger);
+
+            // Additional server-side validation example
+            if (_context.Passengers.Any(p => p.PassportNumber == passenger.PassportNumber))
             {
-                _context.Passengers.Add(passenger);
-                _context.SaveChanges();
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError("PassportNumber", "This passport number already exists.");
+                return View(passenger);
             }
-            return View(passenger);
+
+            await _context.Passengers.AddAsync(passenger);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Passenger/Edit/5
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var passenger = _context.Passengers.FirstOrDefault(x => x.Id == id);
+            var passenger = await _context.Passengers.FindAsync(id);
             if (passenger == null) return NotFound();
+
             return View(passenger);
         }
 
         // POST: Passenger/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Passenger passenger)
+        public async Task<IActionResult> Edit(Passenger passenger)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Passengers.Update(passenger);
-                _context.SaveChanges();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(passenger);
+            if (!ModelState.IsValid)
+                return View(passenger);
+
+            var existingPassenger = await _context.Passengers.FindAsync(passenger.Id);
+            if (existingPassenger == null) return NotFound();
+
+            // Explicitly update fields to avoid overwriting unintentionally
+            existingPassenger.First_Name = passenger.First_Name;
+            existingPassenger.Last_Name = passenger.Last_Name;
+            existingPassenger.PassportNumber = passenger.PassportNumber;
+            existingPassenger.Age = passenger.Age;
+            existingPassenger.ContactEmail = passenger.ContactEmail;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Passenger/Delete/5
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var passenger = _context.Passengers.FirstOrDefault(x => x.Id == id);
+            var passenger = await _context.Passengers.FindAsync(id);
             if (passenger == null) return NotFound();
+
             return View(passenger);
         }
 
         // POST: Passenger/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var passenger = _context.Passengers.FirstOrDefault(x => x.Id == id);
+            var passenger = await _context.Passengers.FindAsync(id);
             if (passenger == null) return NotFound();
 
             _context.Passengers.Remove(passenger);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
         // GET: Passenger/Details/5
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var passenger = _context.Passengers.FirstOrDefault(x => x.Id == id);
+            var passenger = await _context.Passengers.FindAsync(id);
             if (passenger == null) return NotFound();
+
             return View(passenger);
         }
     }
