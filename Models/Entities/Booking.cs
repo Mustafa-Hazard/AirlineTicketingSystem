@@ -2,7 +2,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel;
 
 namespace AirlineTicketingSystem.Models.Entities
 {
@@ -14,7 +13,7 @@ namespace AirlineTicketingSystem.Models.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required]
+        [Required, StringLength(50)]
         [Column("BookingReference")]
         [Display(Name = "Booking Reference")]
         public required string BookingReference { get; set; }
@@ -29,7 +28,7 @@ namespace AirlineTicketingSystem.Models.Entities
         public int PassengerId { get; set; }
         public Passenger? Passenger { get; set; }
 
-        [Required]
+        [Required, StringLength(50)]
         [Column("UserId")]
         [Display(Name = "User Id")]
         public required string UserId { get; set; }  // FK to AspNetUsers
@@ -37,15 +36,20 @@ namespace AirlineTicketingSystem.Models.Entities
         [Required]
         [Column("BookingDate")]
         [Display(Name = "Booking Date")]
+        [DataType(DataType.DateTime)]
         public DateTime BookingDate { get; set; } = DateTime.UtcNow;
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         [Display(Name = "Total Price")]
+        [Range(0, 1000000, ErrorMessage = "Total price must be positive.")]
         public decimal TotalPrice { get; set; }
 
         [Column("IsPaid")]
         [Display(Name = "Paid")]
         public bool IsPaid { get; set; }
+
+        [NotMapped]
+        public string BookingInfo => $"{BookingReference} - {Passenger?.FullName} ({Flight?.FlightNumber})";
     }
 }

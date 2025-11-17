@@ -11,53 +11,62 @@
     <h4>Booking</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.BookingReference)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.BookingReference)
         </dd>
-        <dt class = "col-sm-2">
+
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Flight)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Flight.Destination)
+        <dd class="col-sm-10">
+            @(Model.Flight?.Destination ?? "N/A")
         </dd>
-        <dt class = "col-sm-2">
+
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Passenger)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Passenger.ContactEmail)
+        <dd class="col-sm-10">
+            @(Model.Passenger?.FullName ?? "N/A") - @(Model.Passenger?.ContactEmail ?? "N/A")
         </dd>
-        <dt class = "col-sm-2">
+
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.UserId)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.UserId)
         </dd>
-        <dt class = "col-sm-2">
+
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.BookingDate)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.BookingDate)
         </dd>
-        <dt class = "col-sm-2">
+
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.TotalPrice)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.TotalPrice)
         </dd>
-        <dt class = "col-sm-2">
+
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.IsPaid)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.IsPaid)
         </dd>
     </dl>
-    
-    <form asp-action="Delete">
+
+    <form asp-action="Delete" method="post">
         <input type="hidden" asp-for="Id" />
+        @Html.AntiForgeryToken()
         <input type="submit" value="Delete" class="btn btn-danger" /> |
         <a asp-action="Index">Back to List</a>
     </form>
+
+
 </div>

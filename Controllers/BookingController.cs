@@ -2,6 +2,7 @@
 using AirlineTicketingSystem.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace AirlineTicketingSystem.Controllers
 {
@@ -15,10 +16,12 @@ namespace AirlineTicketingSystem.Controllers
         }
 
         // GET: Booking
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var bookings = _context.Bookings
-                .ToList(); // you can include Flight & Passenger later using Include()
+            var bookings = await _context.Bookings
+                .Include(b => b.Flight)
+                .Include(b => b.Passenger)
+                .ToListAsync();
             return View(bookings);
         }
 
@@ -27,74 +30,107 @@ namespace AirlineTicketingSystem.Controllers
         {
             ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber");
             ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName");
-
             return View();
         }
 
         // POST: Booking/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Booking booking)
+        public async Task<IActionResult> Create(Booking booking)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Bookings.Add(booking);
-                _context.SaveChanges();
-                return RedirectToAction(nameof(Index));
+                ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
+                ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
+                return View(booking);
             }
-            ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber");
-            ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName");
 
-            return View(booking);
+            // Optional: Check for duplicate booking reference
+            if (await _context.Bookings.AnyAsync(b => b.BookingReference == booking.BookingReference))
+            {
+                ModelState.AddModelError("BookingReference", "Booking reference already exists.");
+                ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
+                ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
+                return View(booking);
+            }
+
+            await _context.Bookings.AddAsync(booking);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Booking/Edit/5
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var booking = _context.Bookings.FirstOrDefault(x => x.Id == id);
+            var booking = await _context.Bookings.FindAsync(id);
             if (booking == null) return NotFound();
+
+            ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
+            ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
+
             return View(booking);
         }
 
         // POST: Booking/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Booking booking)
+        public async Task<IActionResult> Edit(Booking booking)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Bookings.Update(booking);
-                _context.SaveChanges();
-                return RedirectToAction(nameof(Index));
+                ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
+                ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
+                return View(booking);
             }
-            return View(booking);
+
+            var existingBooking = await _context.Bookings.FindAsync(booking.Id);
+            if (existingBooking == null) return NotFound();
+
+            existingBooking.BookingReference = booking.BookingReference;
+            existingBooking.FlightId = booking.FlightId;
+            existingBooking.PassengerId = booking.PassengerId;
+            existingBooking.UserId = booking.UserId;
+            existingBooking.BookingDate = booking.BookingDate;
+            existingBooking.TotalPrice = booking.TotalPrice;
+            existingBooking.IsPaid = booking.IsPaid;
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Booking/Delete/5
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var booking = _context.Bookings.FirstOrDefault(x => x.Id == id);
+            var booking = await _context.Bookings
+                .Include(b => b.Flight)
+                .Include(b => b.Passenger)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
             if (booking == null) return NotFound();
             return View(booking);
         }
 
         // POST: Booking/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var booking = _context.Bookings.FirstOrDefault(x => x.Id == id);
+            var booking = await _context.Bookings.FindAsync(id);
             if (booking == null) return NotFound();
 
             _context.Bookings.Remove(booking);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         // GET: Booking/Details/5
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var booking = _context.Bookings.FirstOrDefault(x => x.Id == id);
+            var booking = await _context.Bookings
+                .Include(b => b.Flight)
+                .Include(b => b.Passenger)
+                .FirstOrDefaultAsync(b => b.Id == id);
+            
             if (booking == null) return NotFound();
             return View(booking);
         }
