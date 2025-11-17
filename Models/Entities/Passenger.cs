@@ -19,8 +19,9 @@ namespace AirlineTicketingSystem.Models.Entities
         
         [Column("Last_Name")]
         [Display(Name = "Surname")]
-        public required string Last_Name { get; set; } 
+        public required string Last_Name { get; set; }
 
+        public string FullName => $"{First_Name} {Last_Name}";
 
         [Required]
         [Column("PassportNumber")]

@@ -17,7 +17,7 @@ namespace AirlineTicketingSystem.Models.Entities
         [Required]
         [Column("BookingReference")]
         [Display(Name = "Booking Reference")]
-        public string BookingReference { get; set; }
+        public required string BookingReference { get; set; }
 
         [Required]
         [Column("FlightId")]
@@ -32,7 +32,7 @@ namespace AirlineTicketingSystem.Models.Entities
         [Required]
         [Column("UserId")]
         [Display(Name = "User Id")]
-        public string UserId { get; set; }  // FK to AspNetUsers
+        public required string UserId { get; set; }  // FK to AspNetUsers
 
         [Required]
         [Column("BookingDate")]

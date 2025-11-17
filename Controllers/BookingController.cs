@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using AirlineTicketingSystem.Models;
+﻿using AirlineTicketingSystem.Models;
 using AirlineTicketingSystem.Models.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace AirlineTicketingSystem.Controllers
 {
@@ -24,6 +25,9 @@ namespace AirlineTicketingSystem.Controllers
         // GET: Booking/Create
         public IActionResult Create()
         {
+            ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber");
+            ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName");
+
             return View();
         }
 
@@ -38,6 +42,9 @@ namespace AirlineTicketingSystem.Controllers
                 _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
+            ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber");
+            ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName");
+
             return View(booking);
         }
 
