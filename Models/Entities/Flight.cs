@@ -12,23 +12,29 @@ namespace AirlineTicketingSystem.Models.Entities
         public int Id { get; set; }
 
         [Required]
+        [StringLength(5)]
         [Column("FlightNumber")]
-        public string FlightNumber { get; set; } 
+        [Display(Name = "Flight Number")]
+        public required string FlightNumber { get; set; }
+        
         [Required]
+        [StringLength(100)]
         [Column("Origin")]
-        public string Origin { get; set; } 
+        public required string Origin { get; set; }
 
         [Required]
+        [StringLength(100)]
         [Column("Destination")]
-        public string Destination { get; set; } 
+        public required string Destination { get; set; }
+        
         [Required]
         [Column("Departure")]
-        [Display(Name = "Departure")]
+        [Display(Name = "Departure Time")]
         public DateTime Departure { get; set; }
 
         [Required]
         [Column("Arrival")]
-        [Display(Name = "Arrival")]
+        [Display(Name = "Arrival Time")]
         public DateTime Arrival { get; set; }
 
         [Required]
@@ -37,7 +43,7 @@ namespace AirlineTicketingSystem.Models.Entities
 
         [Required]
         [Column("TotalSeats")]
-        [Display(Name = "Total Seats")]
+        [Display(Name = "Total Sea  ts")]
         public int TotalSeats { get; set; }
 
         [Required]

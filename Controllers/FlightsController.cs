@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using AirlineTicketingSystem.Models;
+﻿using AirlineTicketingSystem.Models;
 using AirlineTicketingSystem.Models.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AirlineTicketingSystem.Controllers
 {
@@ -17,15 +17,17 @@ namespace AirlineTicketingSystem.Controllers
         // GET: Flights
         public async Task<IActionResult> Index()
         {
-            var flights = await _context.Flights.ToListAsync();
-            return View(flights);
+            return View(await _context.Flights.ToListAsync());
         }
 
         // GET: Flights/Details/5
-        public async Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(int? id)
         {
-            var flight = await _context.Flights.FindAsync(id);
+            if (id == null) return BadRequest();
+
+            var flight = await _context.Flights.FirstOrDefaultAsync(f => f.Id == id);
             if (flight == null) return NotFound();
+
             return View(flight);
         }
 
@@ -40,7 +42,15 @@ namespace AirlineTicketingSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Flight flight)
         {
-            if (!ModelState.IsValid) return View(flight);
+            // Custom validation
+            if (flight.Arrival <= flight.Departure)
+                ModelState.AddModelError("Arrival", "Arrival time must be after Departure time.");
+
+            if (flight.SeatsAvailable > flight.TotalSeats)
+                ModelState.AddModelError("SeatsAvailable", "Seats available cannot exceed total seats.");
+
+            if (!ModelState.IsValid)
+                return View(flight);
 
             try
             {
@@ -56,25 +66,45 @@ namespace AirlineTicketingSystem.Controllers
         }
 
         // GET: Flights/Edit/5
-        public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> Edit(int? id)
         {
+            if (id == null) return BadRequest();
+
             var flight = await _context.Flights.FindAsync(id);
             if (flight == null) return NotFound();
+
             return View(flight);
         }
 
         // POST: Flights/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Flight flight)
+        public async Task<IActionResult> Edit(int id, Flight flight)
         {
-            if (!ModelState.IsValid) return View(flight);
+            if (id != flight.Id) return BadRequest();
+
+            // Custom validation
+            if (flight.Arrival <= flight.Departure)
+                ModelState.AddModelError("Arrival", "Arrival time must be after Departure time.");
+
+            if (flight.SeatsAvailable > flight.TotalSeats)
+                ModelState.AddModelError("SeatsAvailable", "Seats available cannot exceed total seats.");
+
+            if (!ModelState.IsValid)
+                return View(flight);
 
             try
             {
                 _context.Flights.Update(flight);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!FlightExists(flight.Id))
+                    return NotFound();
+                else
+                    throw;
             }
             catch (Exception ex)
             {
@@ -84,10 +114,13 @@ namespace AirlineTicketingSystem.Controllers
         }
 
         // GET: Flights/Delete/5
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int? id)
         {
-            var flight = await _context.Flights.FindAsync(id);
+            if (id == null) return BadRequest();
+
+            var flight = await _context.Flights.FirstOrDefaultAsync(f => f.Id == id);
             if (flight == null) return NotFound();
+
             return View(flight);
         }
 
@@ -110,6 +143,11 @@ namespace AirlineTicketingSystem.Controllers
                 ModelState.AddModelError("", $"Error deleting flight: {ex.Message}");
                 return View(flight);
             }
+        }
+
+        private bool FlightExists(int id)
+        {
+            return _context.Flights.Any(f => f.Id == id);
         }
     }
 }
