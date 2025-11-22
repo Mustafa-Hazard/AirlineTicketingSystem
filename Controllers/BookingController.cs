@@ -1,5 +1,6 @@
 ﻿using AirlineTicketingSystem.Models;
 using AirlineTicketingSystem.Models.Entities;
+using AirlineTicketingSystem.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -15,25 +16,27 @@ namespace AirlineTicketingSystem.Controllers
             _context = context;
         }
 
-        // GET: Booking
+        // ------------------------- INDEX -------------------------
         public async Task<IActionResult> Index()
         {
             var bookings = await _context.Bookings
                 .Include(b => b.Flight)
                 .Include(b => b.Passenger)
                 .ToListAsync();
+
             return View(bookings);
         }
 
-        // GET: Booking/Create
+        // ------------------------- CREATE GET -------------------------
         public IActionResult Create()
         {
             ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber");
             ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName");
+
             return View();
         }
 
-        // POST: Booking/Create
+        // ------------------------- CREATE POST -------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Booking booking)
@@ -45,21 +48,50 @@ namespace AirlineTicketingSystem.Controllers
                 return View(booking);
             }
 
-            // Optional: Check for duplicate booking reference
-            if (await _context.Bookings.AnyAsync(b => b.BookingReference == booking.BookingReference))
+            // -------- Generate Booking Reference --------
+            booking.BookingReference = GenerateBookingReference();
+
+            // -------- Fetch Flight for Validation --------
+            var flight = await _context.Flights.FirstOrDefaultAsync(f => f.Id == booking.FlightId);
+
+            if (flight == null)
             {
-                ModelState.AddModelError("BookingReference", "Booking reference already exists.");
+                ModelState.AddModelError("", "Selected flight not found.");
+                return View(booking);
+            }
+
+            // -------- Check Seat Availability --------
+            if (booking.SeatCount > flight.AvailableSeats)
+            {
+                ModelState.AddModelError("SeatCount", $"Only {flight.AvailableSeats} seats remaining.");
                 ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
                 ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
                 return View(booking);
             }
 
+            // -------- Calculate Total Price --------
+            booking.TotalPrice = booking.SeatCount * flight.Price;
+
+            // -------- Assign User ID (placeholder until Identity is added) --------
+            booking.UserId = "TEMP-USER"; // TODO: Replace when Identity added
+
+            // -------- Reduce Seats from Flight --------
+            flight.AvailableSeats -= booking.SeatCount;
+            _context.Flights.Update(flight);
+
+            // -------- Save Booking --------
             await _context.Bookings.AddAsync(booking);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            return RedirectToAction("Summary", new { id = booking.Id });
         }
 
-        // GET: Booking/Edit/5
+        private string GenerateBookingReference()
+        {
+            return "BR-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
+        }
+
+        // ------------------------- EDIT GET -------------------------
         public async Task<IActionResult> Edit(int id)
         {
             var booking = await _context.Bookings.FindAsync(id);
@@ -71,7 +103,7 @@ namespace AirlineTicketingSystem.Controllers
             return View(booking);
         }
 
-        // POST: Booking/Edit/5
+        // ------------------------- EDIT POST -------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Booking booking)
@@ -83,22 +115,21 @@ namespace AirlineTicketingSystem.Controllers
                 return View(booking);
             }
 
-            var existingBooking = await _context.Bookings.FindAsync(booking.Id);
-            if (existingBooking == null) return NotFound();
+            var existing = await _context.Bookings.FindAsync(booking.Id);
+            if (existing == null) return NotFound();
 
-            existingBooking.BookingReference = booking.BookingReference;
-            existingBooking.FlightId = booking.FlightId;
-            existingBooking.PassengerId = booking.PassengerId;
-            existingBooking.UserId = booking.UserId;
-            existingBooking.BookingDate = booking.BookingDate;
-            existingBooking.TotalPrice = booking.TotalPrice;
-            existingBooking.IsPaid = booking.IsPaid;
+            // We do NOT change seat count here (advanced logic)
+            existing.PassengerId = booking.PassengerId;
+            existing.FlightId = booking.FlightId;
+            existing.IsPaid = booking.IsPaid;
+            existing.BookingDate = booking.BookingDate;
 
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Booking/Delete/5
+        // ------------------------- DELETE GET -------------------------
         public async Task<IActionResult> Delete(int id)
         {
             var booking = await _context.Bookings
@@ -107,32 +138,72 @@ namespace AirlineTicketingSystem.Controllers
                 .FirstOrDefaultAsync(b => b.Id == id);
 
             if (booking == null) return NotFound();
+
             return View(booking);
         }
 
-        // POST: Booking/Delete/5
+        // ------------------------- DELETE POST -------------------------
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var booking = await _context.Bookings.FindAsync(id);
+            var booking = await _context.Bookings
+                .Include(b => b.Flight)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
             if (booking == null) return NotFound();
+
+            // restore seats
+            booking.Flight.AvailableSeats += booking.SeatCount;
+            _context.Flights.Update(booking.Flight);
 
             _context.Bookings.Remove(booking);
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Booking/Details/5
+        // ------------------------- DETAILS -------------------------
         public async Task<IActionResult> Details(int id)
         {
             var booking = await _context.Bookings
                 .Include(b => b.Flight)
                 .Include(b => b.Passenger)
                 .FirstOrDefaultAsync(b => b.Id == id);
-            
+
             if (booking == null) return NotFound();
+
             return View(booking);
+        }
+        public async Task<IActionResult> Summary(int id)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Flight)
+                .Include(b => b.Passenger)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (booking == null)
+                return NotFound();
+
+            var vm = new BookingSummaryViewModel
+            {
+                BookingReference = booking.BookingReference,
+                PassengerName = booking.Passenger?.FullName ?? "",
+                FlightNumber = booking.Flight?.FlightNumber ?? "",
+
+                From = booking.Flight?.FromAirport ?? "",
+                To = booking.Flight?.ToAirport ?? "",
+
+                DepartureTimeTime = booking.Flight!.DepartureTime,
+
+                SeatCount = booking.SeatCount,
+                PricePerSeat = booking.Flight.Price,
+                TotalPrice = booking.TotalPrice,
+
+                IsPaid = booking.IsPaid
+            };
+
+            return View(vm);
         }
     }
 }

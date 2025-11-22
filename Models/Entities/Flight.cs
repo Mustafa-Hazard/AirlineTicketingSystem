@@ -28,14 +28,22 @@ namespace AirlineTicketingSystem.Models.Entities
         public required string Destination { get; set; }
         
         [Required]
-        [Column("Departure")]
-        [Display(Name = "Departure Time")]
-        public DateTime Departure { get; set; }
+        [Column("DepartureTime")]
+        [Display(Name = "DepartureTime Time")]
+        public DateTime DepartureTime{ get; set; }
 
         [Required]
-        [Column("Arrival")]
-        [Display(Name = "Arrival Time")]
-        public DateTime Arrival { get; set; }
+        [Column("ArrivalTime")]
+        [Display(Name = "ArrivalTime Time")]
+        public DateTime ArrivalTime { get; set; }
+
+        //FromAirport 
+        [Column]
+        public string? FromAirport { get; set; }
+        //ToAirport
+        [Column]
+        public string? ToAirport { get; set; }
+
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
@@ -43,16 +51,19 @@ namespace AirlineTicketingSystem.Models.Entities
 
         [Required]
         [Column("TotalSeats")]
-        [Display(Name = "Total Sea  ts")]
+        [Display(Name = "Total Seats")]
         public int TotalSeats { get; set; }
 
         [Required]
-        [Column("SeatsAvailable")]
+        [Column("AvailableSeats")]
         [Display(Name = "Seats Available")]
-        public int SeatsAvailable { get; set; }
+        public int AvailableSeats { get; set; }
 
         [Column("IsDelayed")]
         [Display(Name = "Is Delayed")]
         public bool IsDelayed { get; set; }
+
+        //Navigation property one to many with Booking
+        public ICollection<Booking>? Bookings { get; set; }
     }
 }

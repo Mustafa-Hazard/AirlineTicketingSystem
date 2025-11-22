@@ -43,11 +43,11 @@ namespace AirlineTicketingSystem.Controllers
         public async Task<IActionResult> Create(Flight flight)
         {
             // Custom validation
-            if (flight.Arrival <= flight.Departure)
-                ModelState.AddModelError("Arrival", "Arrival time must be after Departure time.");
+            if (flight.ArrivalTime <= flight.DepartureTime)
+                ModelState.AddModelError("ArrivalTime", "ArrivalTime time must be after DepartureTime time.");
 
-            if (flight.SeatsAvailable > flight.TotalSeats)
-                ModelState.AddModelError("SeatsAvailable", "Seats available cannot exceed total seats.");
+            if (flight.AvailableSeats > flight.TotalSeats)
+                ModelState.AddModelError("AvailableSeats", "Seats available cannot exceed total seats.");
 
             if (!ModelState.IsValid)
                 return View(flight);
@@ -84,11 +84,11 @@ namespace AirlineTicketingSystem.Controllers
             if (id != flight.Id) return BadRequest();
 
             // Custom validation
-            if (flight.Arrival <= flight.Departure)
-                ModelState.AddModelError("Arrival", "Arrival time must be after Departure time.");
+            if (flight.ArrivalTime <= flight.DepartureTime)
+                ModelState.AddModelError("ArrivalTime", "ArrivalTime time must be after DepartureTime time.");
 
-            if (flight.SeatsAvailable > flight.TotalSeats)
-                ModelState.AddModelError("SeatsAvailable", "Seats available cannot exceed total seats.");
+            if (flight.AvailableSeats > flight.TotalSeats)
+                ModelState.AddModelError("AvailableSeats", "Seats available cannot exceed total seats.");
 
             if (!ModelState.IsValid)
                 return View(flight);

@@ -37,7 +37,8 @@ namespace AirlineTicketingSystem.Migrations
 
                     b.Property<string>("BookingReference")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("BookingReference");
 
                     b.Property<int>("FlightId")
@@ -52,12 +53,17 @@ namespace AirlineTicketingSystem.Migrations
                         .HasColumnType("int")
                         .HasColumnName("PassengerId");
 
+                    b.Property<int>("SeatCount")
+                        .HasColumnType("int")
+                        .HasColumnName("SeatCount");
+
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("UserId");
 
                     b.HasKey("Id");
@@ -78,23 +84,32 @@ namespace AirlineTicketingSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("Arrival")
+                    b.Property<DateTime>("ArrivalTime")
                         .HasColumnType("datetime2")
-                        .HasColumnName("Arrival");
+                        .HasColumnName("ArrivalTime");
 
-                    b.Property<DateTime>("Departure")
+                    b.Property<int>("AvailableSeats")
+                        .HasColumnType("int")
+                        .HasColumnName("AvailableSeats");
+
+                    b.Property<DateTime>("DepartureTime")
                         .HasColumnType("datetime2")
-                        .HasColumnName("Departure");
+                        .HasColumnName("DepartureTime");
 
                     b.Property<string>("Destination")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("Destination");
 
                     b.Property<string>("FlightNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)")
                         .HasColumnName("FlightNumber");
+
+                    b.Property<string>("FromAirport")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDelayed")
                         .HasColumnType("bit")
@@ -102,15 +117,15 @@ namespace AirlineTicketingSystem.Migrations
 
                     b.Property<string>("Origin")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("Origin");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("SeatsAvailable")
-                        .HasColumnType("int")
-                        .HasColumnName("SeatsAvailable");
+                    b.Property<string>("ToAirport")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("TotalSeats")
                         .HasColumnType("int")
@@ -139,12 +154,12 @@ namespace AirlineTicketingSystem.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ContactEmail");
 
-                    b.Property<string>("FirstName")
+                    b.Property<string>("First_Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("First_Name");
 
-                    b.Property<string>("LastName")
+                    b.Property<string>("Last_Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("Last_Name");
@@ -162,13 +177,13 @@ namespace AirlineTicketingSystem.Migrations
             modelBuilder.Entity("AirlineTicketingSystem.Models.Entities.Booking", b =>
                 {
                     b.HasOne("AirlineTicketingSystem.Models.Entities.Flight", "Flight")
-                        .WithMany()
+                        .WithMany("Bookings")
                         .HasForeignKey("FlightId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("AirlineTicketingSystem.Models.Entities.Passenger", "Passenger")
-                        .WithMany()
+                        .WithMany("Bookings")
                         .HasForeignKey("PassengerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -176,6 +191,16 @@ namespace AirlineTicketingSystem.Migrations
                     b.Navigation("Flight");
 
                     b.Navigation("Passenger");
+                });
+
+            modelBuilder.Entity("AirlineTicketingSystem.Models.Entities.Flight", b =>
+                {
+                    b.Navigation("Bookings");
+                });
+
+            modelBuilder.Entity("AirlineTicketingSystem.Models.Entities.Passenger", b =>
+                {
+                    b.Navigation("Bookings");
                 });
 #pragma warning restore 612, 618
         }

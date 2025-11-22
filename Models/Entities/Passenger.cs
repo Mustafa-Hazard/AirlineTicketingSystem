@@ -36,6 +36,9 @@ namespace AirlineTicketingSystem.Models.Entities
         [Column("ContactEmail")]
         [EmailAddress(ErrorMessage = "Invalid Email Address")]
         [Display(Name = "Email")]
-        public required string ContactEmail { get; set; } 
+        public required string ContactEmail { get; set; }
+
+        //Navigation property one to many with Booking
+        public ICollection<Booking>? Bookings { get; set; }
     }
 }

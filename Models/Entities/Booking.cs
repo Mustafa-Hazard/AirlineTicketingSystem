@@ -8,36 +8,46 @@ namespace AirlineTicketingSystem.Models.Entities
     [Table("Bookings")]
     public class Booking
     {
-        [Column("Id")]
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("Id")]
         public int Id { get; set; }
 
         [Required, StringLength(50)]
         [Column("BookingReference")]
         [Display(Name = "Booking Reference")]
-        public required string BookingReference { get; set; }
+        public string BookingReference { get; set; } = string.Empty;
 
         [Required]
         [Column("FlightId")]
         public int FlightId { get; set; }
+
+        [ForeignKey("FlightId")]
         public Flight? Flight { get; set; }
 
         [Required]
         [Column("PassengerId")]
         public int PassengerId { get; set; }
+
+        [ForeignKey("PassengerId")]
         public Passenger? Passenger { get; set; }
 
-        [Required, StringLength(50)]
+        [Required]
+        [StringLength(50)]
         [Column("UserId")]
         [Display(Name = "User Id")]
-        public required string UserId { get; set; }  // FK to AspNetUsers
+        public string UserId { get; set; } = string.Empty;
 
         [Required]
         [Column("BookingDate")]
         [Display(Name = "Booking Date")]
-        [DataType(DataType.DateTime)]
         public DateTime BookingDate { get; set; } = DateTime.UtcNow;
+
+        [Required]
+        [Range(1, 10)]
+        [Column("SeatCount")]
+        [Display(Name = "Seats")]
+        public int SeatCount { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]

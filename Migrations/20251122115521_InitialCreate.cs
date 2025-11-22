@@ -17,14 +17,16 @@ namespace AirlineTicketingSystem.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    FlightNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Origin = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Destination = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Departure = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Arrival = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FlightNumber = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
+                    Origin = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Destination = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    DepartureTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ArrivalTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FromAirport = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ToAirport = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TotalSeats = table.Column<int>(type: "int", nullable: false),
-                    SeatsAvailable = table.Column<int>(type: "int", nullable: false),
+                    AvailableSeats = table.Column<int>(type: "int", nullable: false),
                     IsDelayed = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -55,11 +57,12 @@ namespace AirlineTicketingSystem.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    BookingReference = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BookingReference = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     FlightId = table.Column<int>(type: "int", nullable: false),
                     PassengerId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     BookingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    SeatCount = table.Column<int>(type: "int", nullable: false),
                     TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     IsPaid = table.Column<bool>(type: "bit", nullable: false)
                 },

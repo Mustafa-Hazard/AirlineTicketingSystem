@@ -3,51 +3,173 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - AirlineTicketingSystem</title>
+    <title>@ViewData["Title"] - AeroNexa</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/bootswatch-css/bootstrap.css" />
-    <link rel="stylesheet" href="~/AirlineTicketingSystem.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        /* Dark mode support */
+        body.dark-mode {
+            background-color: #121212;
+            color: #e8e8e8;
+        }
+
+        .dark-mode .navbar {    
+            background-color: #222 !important;
+        }
+
+        /* Toast container */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1055;
+        }
+    </style>
 </head>
+
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
             <div class="container-fluid">
-                <a class="navbar-brand" href="@Url.Action("Index", "Home")">Airline Ticketing</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+
+                <a class="navbar-brand fw-bold" href="@Url.Action("Index", "Home")">
+                    <i class="bi bi-airplane-fill me-1"></i> AeroNexa
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#mainNavbar">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index", "Flights")">Flights</a>
+
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav me-auto">
+
+                        <!-- Flights -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="bi bi-airplane"></i> Flights
+                            </a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" asp-action="Index" asp-controller="Flights">
+                                    <i class="bi bi-list-ul"></i> View All
+                                </a>
+                                <a class="dropdown-item" asp-action="Create" asp-controller="Flights">
+                                    <i class="bi bi-plus-circle"></i> Create
+                                </a>
+                            </div>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index", "Passenger")">Passengers</a>
+
+                        <!-- Passengers -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="bi bi-people-fill"></i> Passengers
+                            </a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" asp-action="Index" asp-controller="Passenger">
+                                    <i class="bi bi-list-check"></i> View All
+                                </a>
+                                <a class="dropdown-item" asp-action="Create" asp-controller="Passenger">
+                                    <i class="bi bi-person-plus-fill"></i> Create
+                                </a>
+                            </div>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index", "Booking")">Bookings</a>
+
+                        <!-- Bookings -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="bi bi-journal-check"></i> Bookings
+                            </a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" asp-action="Index" asp-controller="Booking">
+                                    <i class="bi bi-card-list"></i> View All
+                                </a>
+                                <a class="dropdown-item" asp-action="Create" asp-controller="Booking">
+                                    <i class="bi bi-plus-circle"></i> Create
+                                </a>
+                            </div>
                         </li>
+
                     </ul>
+
+                    <!-- Search Flights -->
+                    <form class="d-flex" asp-controller="Flights" asp-action="Search" method="get">
+                        <input class="form-control me-2" name="query" type="search" placeholder="Search flights..." />
+                        <button class="btn btn-outline-light" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
+
+                    <!-- Dark Mode Toggle -->
+                    <button class="btn btn-outline-light ms-3" id="toggleTheme">
+                        <i class="bi bi-moon-stars" id="themeIcon"></i>
+                    </button>
+
                 </div>
             </div>
         </nav>
-
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+
+    <div class="container mt-4">
+
+        <!-- Breadcrumbs -->
+        @if (ViewData["Breadcrumb"] != null)
+        {
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    @foreach (var item in (List<string>)ViewData["Breadcrumb"])
+                    {
+                        <li class="breadcrumb-item">@item</li>
+                    }
+                </ol>
+            </nav>
+        }
+
+        <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted mt-4">
         <div class="container">
-            &copy; 2025 - AirlineTicketingSystem - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; <span id="year"></span> - AeroNexa -
+            <a asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
+    <!-- Toast Messages -->
+    <div id="toast-container"></div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        // Auto Year Update
+        document.getElementById("year").textContent = new Date().getFullYear();
+
+        // Dark mode toggle
+        const toggleBtn = document.getElementById('toggleTheme');
+        const icon = document.getElementById('themeIcon');
+
+        toggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            icon.classList.toggle('bi-moon-stars');
+            icon.classList.toggle('bi-sun-fill');
+        });
+
+        // Toast function for notifications
+        function showToast(message, type = "success") {
+            const toast = document.createElement("div");
+            toast.className = `alert alert-${type} fade show`;
+            toast.innerHTML = message;
+            document.getElementById("toast-container").appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
