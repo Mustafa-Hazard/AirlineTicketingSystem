@@ -1,72 +1,17 @@
 ﻿@model AirlineTicketingSystem.Models.Entities.Flight
-
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Flight Details";
 }
+<h2>Flight Details</h2>
 
-<h1>Details</h1>
-
-<div>
-    <h4>Flight</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FlightNumber)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FlightNumber)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Origin)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Origin)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Destination)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Destination)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DepartureTime)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DepartureTime)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ArrivalTime)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ArrivalTime)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TotalSeats)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TotalSeats)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AvailableSeats)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AvailableSeats)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsDelayed)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsDelayed)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="card p-3">
+    <h4>@Model.FlightNumber — @Model.Origin → @Model.Destination</h4>
+    <p><strong>Departure:</strong> @Model.DepartureTime.ToString("f")</p>
+    <p><strong>Arrival:</strong> @Model.ArrivalTime.ToString("f")</p>
+    <p><strong>Duration:</strong> @Model.Duration.ToString()</p>
+    <p><strong>Economy:</strong> @Model.EconomySeats total / @Model.AvailableEconomySeats available (@Model.EconomyPrice)</p>
+    <p><strong>Business:</strong> @Model.BusinessSeats total / @Model.AvailableBusinessSeats available (@Model.BusinessPrice)</p>
+    <p><strong>First Class:</strong> @Model.FirstClassSeats total / @Model.AvailableFirstClassSeats available (@Model.FirstClassPrice)</p>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
 </div>

@@ -14,7 +14,7 @@ namespace AirlineTicketingSystem.Controllers
         }
 
         // GET: Passenger
-        public async Task<IActionResult>  Index()
+        public async Task<IActionResult> Index()
         {
             var passengers = _context.Passengers.ToList();
             return View(passengers);
@@ -72,6 +72,7 @@ namespace AirlineTicketingSystem.Controllers
             existingPassenger.Last_Name = passenger.Last_Name;
             existingPassenger.PassportNumber = passenger.PassportNumber;
             existingPassenger.Age = passenger.Age;
+            existingPassenger.Nationality = passenger.Nationality;
             existingPassenger.ContactEmail = passenger.ContactEmail;
 
             await _context.SaveChangesAsync();

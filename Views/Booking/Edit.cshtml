@@ -1,64 +1,72 @@
 ﻿@model AirlineTicketingSystem.Models.Entities.Booking
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Booking";
 }
 
-<h1>Edit</h1>
-
-<h4>Booking</h4>
+<h2>Edit Booking</h2>
 <hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="BookingReference" class="control-label"></label>
-                <input asp-for="BookingReference" class="form-control" />
-                <span asp-validation-for="BookingReference" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="FlightId" class="control-label"></label>
-                <select asp-for="FlightId" class="form-control" asp-items="ViewBag.FlightId"></select>
-                <span asp-validation-for="FlightId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="PassengerId" class="control-label"></label>
-                <select asp-for="PassengerId" class="form-control" asp-items="ViewBag.PassengerId"></select>
-                <span asp-validation-for="PassengerId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="UserId" class="control-label"></label>
-                <input asp-for="UserId" class="form-control" />
-                <span asp-validation-for="UserId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="BookingDate" class="control-label"></label>
-                <input asp-for="BookingDate" class="form-control" />
-                <span asp-validation-for="BookingDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TotalPrice" class="control-label"></label>
-                <input asp-for="TotalPrice" class="form-control" />
-                <span asp-validation-for="TotalPrice" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsPaid" /> @Html.DisplayNameFor(model => model.IsPaid)
-                </label>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+
+<form asp-action="Edit" method="post" class="row g-3">
+
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="col-md-6">
+        <label asp-for="FlightId" class="form-label"></label>
+        <select asp-for="FlightId" class="form-select" asp-items="ViewBag.FlightId"></select>
+        <span asp-validation-for="FlightId" class="text-danger"></span>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <div class="col-md-6">
+        <label asp-for="PassengerId" class="form-label"></label>
+        <select asp-for="PassengerId" class="form-select" asp-items="ViewBag.PassengerId"></select>
+        <span asp-validation-for="PassengerId" class="text-danger"></span>
+    </div>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+    <div class="col-md-6">
+        <label asp-for="SeatClass" class="form-label"></label>
+        <select asp-for="SeatClass" class="form-select" asp-items="ViewBag.SeatClass"></select>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="PassengerType" class="form-label"></label>
+        <select asp-for="PassengerType" class="form-select" asp-items="ViewBag.PassengerType"></select>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="SeatCount" class="form-label"></label>
+        <input asp-for="SeatCount" type="number" class="form-control" />
+    </div>
+
+    <div class="col-md-8">
+        <label asp-for="UserId" class="form-label"></label>
+        <input asp-for="UserId" class="form-control" />
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="BookingReference" class="form-label"></label>
+        <input asp-for="BookingReference" class="form-control" />
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="BookingDate" class="form-label"></label>
+        <input asp-for="BookingDate" type="datetime-local" class="form-control" />
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="TotalPrice" class="form-label"></label>
+        <input asp-for="TotalPrice" type="number" step="0.01" class="form-control" />
+    </div>
+
+    <div class="col-md-6 form-check mt-4">
+        <input asp-for="IsPaid" class="form-check-input" />
+        <label asp-for="IsPaid" class="form-check-label"></label>
+    </div>
+
+    <div class="col-12">
+        <button class="btn btn-primary">Save</button>
+        <a asp-action="Index" class="btn btn-secondary">Back</a>
+    </div>
+
+</form>

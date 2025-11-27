@@ -16,27 +16,38 @@ namespace AirlineTicketingSystem.Controllers
             _context = context;
         }
 
-        // ------------------------- INDEX -------------------------
+        // INDEX
         public async Task<IActionResult> Index()
         {
             var bookings = await _context.Bookings
                 .Include(b => b.Flight)
                 .Include(b => b.Passenger)
                 .ToListAsync();
-
             return View(bookings);
         }
 
-        // ------------------------- CREATE GET -------------------------
+        // DETAILS
+        public async Task<IActionResult> Details(int id)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Flight)
+                .Include(b => b.Passenger)
+                .FirstOrDefaultAsync(b => b.Id == id);
+            if (booking == null) return NotFound();
+            return View(booking);
+        }
+
+        // CREATE GET
         public IActionResult Create()
         {
             ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber");
             ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName");
-
+            ViewBag.SeatClass = new SelectList(Enum.GetValues(typeof(SeatClass)));
+            ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)));
             return View();
         }
 
-        // ------------------------- CREATE POST -------------------------
+        // CREATE POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Booking booking)
@@ -45,42 +56,79 @@ namespace AirlineTicketingSystem.Controllers
             {
                 ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
                 ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
+                ViewBag.SeatClass = new SelectList(Enum.GetValues(typeof(SeatClass)), booking.SeatClass);
+                ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)), booking.PassengerType);
                 return View(booking);
             }
 
-            // -------- Generate Booking Reference --------
-            booking.BookingReference = GenerateBookingReference();
-
-            // -------- Fetch Flight for Validation --------
             var flight = await _context.Flights.FirstOrDefaultAsync(f => f.Id == booking.FlightId);
-
             if (flight == null)
             {
                 ModelState.AddModelError("", "Selected flight not found.");
                 return View(booking);
             }
 
-            // -------- Check Seat Availability --------
-            if (booking.SeatCount > flight.AvailableSeats)
+            // price per class
+            decimal basePrice = booking.SeatClass switch
             {
-                ModelState.AddModelError("SeatCount", $"Only {flight.AvailableSeats} seats remaining.");
+                SeatClass.Economy => flight.EconomyPrice,
+                SeatClass.Business => flight.BusinessPrice,
+                SeatClass.FirstClass => flight.FirstClassPrice,
+                _ => flight.EconomyPrice
+            };
+
+            // passenger type multiplier
+            decimal multiplier = booking.PassengerType switch
+            {
+                PassengerType.Adult => 1.0m,
+                PassengerType.Child => 0.7m,
+                PassengerType.Infant => 0.2m,
+                _ => 1.0m
+            };
+
+            decimal pricePerSeat = basePrice * multiplier;
+
+            // availability check per class
+            bool notEnough = booking.SeatClass switch
+            {
+                SeatClass.Economy => booking.SeatCount > flight.AvailableEconomySeats,
+                SeatClass.Business => booking.SeatCount > flight.AvailableBusinessSeats,
+                SeatClass.FirstClass => booking.SeatCount > flight.AvailableFirstClassSeats,
+                _ => true
+            };
+
+            if (notEnough)
+            {
+                ModelState.AddModelError("SeatCount", "Not enough seats available in the selected class.");
                 ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
                 ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
+                ViewBag.SeatClass = new SelectList(Enum.GetValues(typeof(SeatClass)), booking.SeatClass);
+                ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)), booking.PassengerType);
                 return View(booking);
             }
 
-            // -------- Calculate Total Price --------
-            booking.TotalPrice = booking.SeatCount * flight.Price;
+            // deduct seats
+            switch (booking.SeatClass)
+            {
+                case SeatClass.Economy:
+                    flight.AvailableEconomySeats -= booking.SeatCount;
+                    break;
+                case SeatClass.Business:
+                    flight.AvailableBusinessSeats -= booking.SeatCount;
+                    break;
+                case SeatClass.FirstClass:
+                    flight.AvailableFirstClassSeats -= booking.SeatCount;
+                    break;
+            }
 
-            // -------- Assign User ID (placeholder until Identity is added) --------
-            booking.UserId = "TEMP-USER"; // TODO: Replace when Identity added
+            booking.TotalPrice = pricePerSeat * booking.SeatCount;
+            booking.BookingReference = GenerateBookingReference();
 
-            // -------- Reduce Seats from Flight --------
-            flight.AvailableSeats -= booking.SeatCount;
+            // placeholder user id; replace with actual user when Identity present
+            booking.UserId = User?.Identity?.IsAuthenticated == true ? User.Identity.Name ?? "USER" : "GUEST";
+
             _context.Flights.Update(flight);
-
-            // -------- Save Booking --------
-            await _context.Bookings.AddAsync(booking);
+            _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Summary", new { id = booking.Id });
@@ -91,7 +139,7 @@ namespace AirlineTicketingSystem.Controllers
             return "BR-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
         }
 
-        // ------------------------- EDIT GET -------------------------
+        // EDIT GET
         public async Task<IActionResult> Edit(int id)
         {
             var booking = await _context.Bookings.FindAsync(id);
@@ -99,11 +147,13 @@ namespace AirlineTicketingSystem.Controllers
 
             ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
             ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
+            ViewBag.SeatClass = new SelectList(Enum.GetValues(typeof(SeatClass)), booking.SeatClass);
+            ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)), booking.PassengerType);
 
             return View(booking);
         }
 
-        // ------------------------- EDIT POST -------------------------
+        // EDIT POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Booking booking)
@@ -112,37 +162,117 @@ namespace AirlineTicketingSystem.Controllers
             {
                 ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
                 ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
+                ViewBag.SeatClass = new SelectList(Enum.GetValues(typeof(SeatClass)), booking.SeatClass);
+                ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)), booking.PassengerType);
                 return View(booking);
             }
 
-            var existing = await _context.Bookings.FindAsync(booking.Id);
+            var existing = await _context.Bookings
+                .Include(b => b.Flight)
+                .FirstOrDefaultAsync(b => b.Id == booking.Id);
+
             if (existing == null) return NotFound();
 
-            // We do NOT change seat count here (advanced logic)
-            existing.PassengerId = booking.PassengerId;
+            // If class or seat count changes, we need to adjust flight availability
+            if (existing.SeatClass != booking.SeatClass || existing.SeatCount != booking.SeatCount)
+            {
+                // restore previous seats
+                var flight = await _context.Flights.FindAsync(existing.FlightId);
+                if (flight == null) return BadRequest();
+
+                switch (existing.SeatClass)
+                {
+                    case SeatClass.Economy:
+                        flight.AvailableEconomySeats += existing.SeatCount;
+                        break;
+                    case SeatClass.Business:
+                        flight.AvailableBusinessSeats += existing.SeatCount;
+                        break;
+                    case SeatClass.FirstClass:
+                        flight.AvailableFirstClassSeats += existing.SeatCount;
+                        break;
+                }
+
+                // check new availability
+                bool notEnough = booking.SeatClass switch
+                {
+                    SeatClass.Economy => booking.SeatCount > flight.AvailableEconomySeats,
+                    SeatClass.Business => booking.SeatCount > flight.AvailableBusinessSeats,
+                    SeatClass.FirstClass => booking.SeatCount > flight.AvailableFirstClassSeats,
+                    _ => true
+                };
+
+                if (notEnough)
+                {
+                    ModelState.AddModelError("SeatCount", "Not enough seats available for the updated selection.");
+                    ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
+                    ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
+                    ViewBag.SeatClass = new SelectList(Enum.GetValues(typeof(SeatClass)), booking.SeatClass);
+                    ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)), booking.PassengerType);
+                    return View(booking);
+                }
+
+                // deduct new seats
+                switch (booking.SeatClass)
+                {
+                    case SeatClass.Economy:
+                        flight.AvailableEconomySeats -= booking.SeatCount;
+                        break;
+                    case SeatClass.Business:
+                        flight.AvailableBusinessSeats -= booking.SeatCount;
+                        break;
+                    case SeatClass.FirstClass:
+                        flight.AvailableFirstClassSeats -= booking.SeatCount;
+                        break;
+                }
+
+                _context.Flights.Update(flight);
+            }
+
+            // recalc price
+            var selectedFlight = await _context.Flights.FindAsync(booking.FlightId);
+            decimal basePrice = booking.SeatClass switch
+            {
+                SeatClass.Economy => selectedFlight!.EconomyPrice,
+                SeatClass.Business => selectedFlight!.BusinessPrice,
+                SeatClass.FirstClass => selectedFlight!.FirstClassPrice,
+                _ => selectedFlight!.EconomyPrice
+            };
+            decimal multiplier = booking.PassengerType switch
+            {
+                PassengerType.Adult => 1.0m,
+                PassengerType.Child => 0.7m,
+                PassengerType.Infant => 0.2m,
+                _ => 1.0m
+            };
+            booking.TotalPrice = basePrice * multiplier * booking.SeatCount;
+
+            // update editable fields
             existing.FlightId = booking.FlightId;
+            existing.PassengerId = booking.PassengerId;
+            existing.SeatCount = booking.SeatCount;
+            existing.SeatClass = booking.SeatClass;
+            existing.PassengerType = booking.PassengerType;
             existing.IsPaid = booking.IsPaid;
+            existing.TotalPrice = booking.TotalPrice;
             existing.BookingDate = booking.BookingDate;
 
             await _context.SaveChangesAsync();
-
             return RedirectToAction(nameof(Index));
         }
 
-        // ------------------------- DELETE GET -------------------------
+        // DELETE GET
         public async Task<IActionResult> Delete(int id)
         {
             var booking = await _context.Bookings
                 .Include(b => b.Flight)
                 .Include(b => b.Passenger)
                 .FirstOrDefaultAsync(b => b.Id == id);
-
             if (booking == null) return NotFound();
-
             return View(booking);
         }
 
-        // ------------------------- DELETE POST -------------------------
+        // DELETE POST
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -153,18 +283,33 @@ namespace AirlineTicketingSystem.Controllers
 
             if (booking == null) return NotFound();
 
-            // restore seats
-            booking.Flight.AvailableSeats += booking.SeatCount;
-            _context.Flights.Update(booking.Flight);
+
+            // restore seats back to flight based on class
+            var flight = booking.Flight;
+            if (flight != null)
+            {
+                switch (booking.SeatClass)
+                {
+                    case SeatClass.Economy:
+                        flight.AvailableEconomySeats += booking.SeatCount;
+                        break;
+                    case SeatClass.Business:
+                        flight.AvailableBusinessSeats += booking.SeatCount;
+                        break;
+                    case SeatClass.FirstClass:
+                        flight.AvailableFirstClassSeats += booking.SeatCount;
+                        break;
+                }
+                _context.Flights.Update(flight);
+            }
 
             _context.Bookings.Remove(booking);
             await _context.SaveChangesAsync();
-
             return RedirectToAction(nameof(Index));
         }
 
-        // ------------------------- DETAILS -------------------------
-        public async Task<IActionResult> Details(int id)
+        // SUMMARY
+        public async Task<IActionResult> Summary(int id)
         {
             var booking = await _context.Bookings
                 .Include(b => b.Flight)
@@ -173,34 +318,20 @@ namespace AirlineTicketingSystem.Controllers
 
             if (booking == null) return NotFound();
 
-            return View(booking);
-        }
-        public async Task<IActionResult> Summary(int id)
-        {
-            var booking = await _context.Bookings
-                .Include(b => b.Flight)
-                .Include(b => b.Passenger)
-                .FirstOrDefaultAsync(b => b.Id == id);
-
-            if (booking == null)
-                return NotFound();
-
             var vm = new BookingSummaryViewModel
             {
                 BookingReference = booking.BookingReference,
                 PassengerName = booking.Passenger?.FullName ?? "",
                 FlightNumber = booking.Flight?.FlightNumber ?? "",
-
-                From = booking.Flight?.FromAirport ?? "",
-                To = booking.Flight?.ToAirport ?? "",
-
-                DepartureTimeTime = booking.Flight!.DepartureTime,
-
+                From = booking.Flight?.Origin ?? "",
+                To = booking.Flight?.Destination ?? "",
+                DepartureTime = booking.Flight?.DepartureTime ?? DateTime.MinValue,
                 SeatCount = booking.SeatCount,
-                PricePerSeat = booking.Flight.Price,
+                PricePerSeat = booking.TotalPrice / booking.SeatCount,
                 TotalPrice = booking.TotalPrice,
-
-                IsPaid = booking.IsPaid
+                IsPaid = booking.IsPaid,
+                SeatClass = booking.SeatClass.ToString(),
+                PassengerType = booking.PassengerType.ToString()
             };
 
             return View(vm);

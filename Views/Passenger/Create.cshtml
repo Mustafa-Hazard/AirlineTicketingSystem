@@ -1,61 +1,47 @@
 ﻿@model AirlineTicketingSystem.Models.Entities.Passenger
-
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Add Passenger";
 }
+<h2>Add Passenger</h2>
 
-<h1>Create</h1>
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-<h4>Passenger</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            <div class="form-group">
-                <label asp-for="First_Name" class="control-label"></label>
-                <input asp-for="First_Name" class="form-control" type="text" placeholder="Enter first name" />
-                <span asp-validation-for="First_Name" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="Last_Name" class="control-label"></label>
-                <input asp-for="Last_Name" class="form-control" type="text" placeholder="Enter last name" />
-                <span asp-validation-for="Last_Name" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="PassportNumber" class="control-label"></label>
-                <input asp-for="PassportNumber" class="form-control" type="text" placeholder="Enter passport number" />
-                <span asp-validation-for="PassportNumber" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="Age" class="control-label"></label>
-                <input asp-for="Age" class="form-control" type="number" min="0" max="120" step="1" placeholder="Enter age" />
-                <span asp-validation-for="Age" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="ContactEmail" class="control-label"></label>
-                <input asp-for="ContactEmail" class="form-control" type="email" placeholder="Enter email" />
-                <span asp-validation-for="ContactEmail" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+    <div class="mb-3">
+        <label asp-for="First_Name"></label>
+        <input asp-for="First_Name" class="form-control" />
     </div>
-</div>
+    <div class="mb-3">
+        <label asp-for="Last_Name"></label>
+        <input asp-for="Last_Name" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="PassportNumber"></label>
+        <input asp-for="PassportNumber" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Age"></label>
+        <input asp-for="Age" class="form-control" type="number" min="0" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Nationality"></label>
+        <input asp-for="Nationality" class="form-control"/>
+    </div>
+    <div class="mb-3">
+        <label asp-for="ContactEmail"></label>
+        <input asp-for="ContactEmail" class="form-control" type="email" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="PhoneNumber"></label>
+        <input asp-for="PhoneNumber" class="form-control" />
+    </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <button class="btn btn-primary">Create</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
 }

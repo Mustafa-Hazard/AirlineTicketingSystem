@@ -1,83 +1,40 @@
 ﻿@model IEnumerable<AirlineTicketingSystem.Models.Entities.Flight>
-
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Flights";
 }
+<h2>Flights</h2>
+<p><a asp-action="Create" class="btn btn-primary">Add Flight</a></p>
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
+<table class="table table-striped">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FlightNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Origin)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Destination)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DepartureTime)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ArrivalTime)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TotalSeats)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.AvailableSeats)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsDelayed)
-            </th>
+            <th>Flight</th>
+            <th>Route</th>
+            <th>Departure</th>
+            <th>Arrival</th>
+            <th>Economy / Avail</th>
+            <th>Business / Avail</th>
+            <th>First / Avail</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FlightNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Origin)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Destination)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DepartureTime)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ArrivalTime)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TotalSeats)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AvailableSeats)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsDelayed)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var f in Model)
+        {
+            <tr>
+                <td>@f.FlightNumber</td>
+                <td>@f.Origin → @f.Destination</td>
+                <td>@f.DepartureTime.ToString("g")</td>
+                <td>@f.ArrivalTime.ToString("g")</td>
+                <td>@f.EconomySeats / @f.AvailableEconomySeats</td>
+                <td>@f.BusinessSeats / @f.AvailableBusinessSeats</td>
+                <td>@f.FirstClassSeats / @f.AvailableFirstClassSeats</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@f.Id">Details</a> |
+                    <a asp-action="Edit" asp-route-id="@f.Id">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@f.Id">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

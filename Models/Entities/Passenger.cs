@@ -1,44 +1,50 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-
 namespace AirlineTicketingSystem.Models.Entities
 {
     [Table("Passengers")]
     public class Passenger
     {
-        [Column("Id")]
         [Key]
+        [Column("Id")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required]
+        [Required, StringLength(50)]
         [Column("First_Name")]
         [Display(Name = "First Name")]
-        public required string First_Name { get; set; } 
-        
+        public string First_Name { get; set; } = string.Empty;
+
+        [Required, StringLength(50)]
         [Column("Last_Name")]
         [Display(Name = "Surname")]
-        public required string Last_Name { get; set; }
+        public string Last_Name { get; set; } = string.Empty;
 
         public string FullName => $"{First_Name} {Last_Name}";
 
-        [Required]
+        [Required, StringLength(20)]
         [Column("PassportNumber")]
         [Display(Name = "Passport Number")]
-        public required string PassportNumber { get; set; } 
+        public string PassportNumber { get; set; } = string.Empty;
 
-        [Required]
+        [Required, Range(1, 120)]
         [Column("Age")]
         public int Age { get; set; }
 
-        [Required]
-        [Column("ContactEmail")]
-        [EmailAddress(ErrorMessage = "Invalid Email Address")]
-        [Display(Name = "Email")]
-        public required string ContactEmail { get; set; }
+        [Column("Nationality")]
+        public string Nationality { get; set; }
 
-        //Navigation property one to many with Booking
+        [Required, EmailAddress, StringLength(100)]
+        [Column("ContactEmail")]
+        [Display(Name = "Email")]
+        public string ContactEmail { get; set; } = string.Empty;
+
+        [Phone, StringLength(20)]
+        [Column("PhoneNumber")]
+        [Display(Name = "Phone Number")]
+        public string? PhoneNumber { get; set; }
+
         public ICollection<Booking>? Bookings { get; set; }
     }
 }

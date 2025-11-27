@@ -7,9 +7,11 @@
 <h1>Delete</h1>
 
 <h3>Are you sure you want to delete this?</h3>
+
 <div>
     <h4>Booking</h4>
     <hr />
+
     <dl class="row">
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.BookingReference)
@@ -19,31 +21,38 @@
         </dd>
 
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Flight)
+            Flight
         </dt>
         <dd class="col-sm-10">
-            @(Model.Flight?.Destination ?? "N/A")
+            @Model.Flight?.FlightNumber (@Model.Flight?.Origin → @Model.Flight?.Destination)
         </dd>
 
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Passenger)
+            Passenger
         </dt>
         <dd class="col-sm-10">
-            @(Model.Passenger?.FullName ?? "N/A") - @(Model.Passenger?.ContactEmail ?? "N/A")
+            @Model.Passenger?.FullName
         </dd>
 
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.UserId)
+            @Html.DisplayNameFor(model => model.SeatClass)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.UserId)
+            @Html.DisplayFor(model => model.SeatClass)
         </dd>
 
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.BookingDate)
+            @Html.DisplayNameFor(model => model.PassengerType)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.BookingDate)
+            @Html.DisplayFor(model => model.PassengerType)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.SeatCount)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.SeatCount)
         </dd>
 
         <dt class="col-sm-2">
@@ -61,12 +70,9 @@
         </dd>
     </dl>
 
-    <form asp-action="Delete" method="post">
+    <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
-        @Html.AntiForgeryToken()
         <input type="submit" value="Delete" class="btn btn-danger" /> |
         <a asp-action="Index">Back to List</a>
     </form>
-
-
 </div>

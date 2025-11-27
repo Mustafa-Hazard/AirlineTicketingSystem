@@ -1,147 +1,21 @@
 ﻿@model AirlineTicketingSystem.Models.ViewModels.BookingSummaryViewModel
 @{
-    ViewData["Title"] = "Booking Confirmation";
+ViewData["Title"] = "Booking Summary";
 }
-
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-lg border-0">
-                <!-- Header -->
-                <div class="card-header bg-success text-white text-center py-4">
-                    <h2 class="mb-0">
-                        <i class="bi bi-check-circle-fill"></i>
-                        Booking Confirmed!
-                    </h2>
-                </div>
-
-                <!-- Body -->
-                <div class="card-body p-4">
-                    <!-- Booking Reference -->
-                    <div class="text-center mb-4 p-3 bg-light rounded">
-                        <h5 class="text-muted mb-2">Your Booking Reference</h5>
-                        <h3 class="text-primary fw-bold">@Model.BookingReference</h3>
-                        <small class="text-muted">Please save this reference for your records</small>
-                    </div>
-
-                    <hr />
-
-                    <!-- Flight & Passenger Info -->
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="p-3 border rounded">
-                                <h5 class="text-primary mb-3">
-                                    <i class="bi bi-person-circle"></i> Passenger Details
-                                </h5>
-                                <p class="mb-1">
-                                    <strong>Name:</strong> @Model.PassengerName
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <div class="p-3 border rounded">
-                                <h5 class="text-primary mb-3">
-                                    <i class="bi bi-airplane"></i> Flight Details
-                                </h5>
-                                <p class="mb-1">
-                                    <strong>Flight:</strong>
-                                    <span class="badge bg-info">@Model.FlightNumber</span>
-                                </p>
-                                <p class="mb-1">
-                                    <strong>Route:</strong>
-                                    @Model.From <i class="bi bi-arrow-right"></i> @Model.To
-                                </p>
-                                <p class="mb-0">
-                                    <strong>Departure:</strong>
-                                    @Model.DepartureTimeTime.ToString("MMM dd, yyyy 'at' hh:mm tt")
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr />
-
-                    <!-- Pricing Details -->
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="p-3 bg-light rounded">
-                                <h5 class="text-primary mb-3">
-                                    <i class="bi bi-receipt"></i> Booking Summary
-                                </h5>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Number of Seats:</span>
-                                    <strong>@Model.SeatCount</strong>
-                                </div>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Price per Seat:</span>
-                                    <strong>$@Model.PricePerSeat.ToString("N2")</strong>
-                                </div>
-                                <hr />
-                                <div class="d-flex justify-content-between">
-                                    <h5 class="mb-0">Total Amount:</h5>
-                                    <h5 class="text-success mb-0">$@Model.TotalPrice.ToString("N2")</h5>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <div class="p-3 border rounded">
-                                <h5 class="text-primary mb-3">
-                                    <i class="bi bi-credit-card"></i> Payment Status
-                                </h5>
-                                <div class="text-center py-3">
-                                    @if (Model.IsPaid)
-                                    {
-                                        <h3 class="mb-0">
-                                            <span class="badge bg-success fs-4">
-                                                <i class="bi bi-check-circle-fill"></i> PAID
-                                            </span>
-                                        </h3>
-                                        <p class="text-muted mt-2 mb-0">Your booking is fully confirmed</p>
-                                    }
-                                    else
-                                    {
-                                        <h3 class="mb-0">
-                                            <span class="badge bg-warning text-dark fs-4">
-                                                <i class="bi bi-exclamation-triangle-fill"></i> PENDING
-                                            </span>
-                                        </h3>
-                                        <p class="text-muted mt-2 mb-0">Payment is required to confirm booking</p>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="text-center mt-4">
-                        <a asp-action="Index" class="btn btn-primary btn-lg me-2">
-                            <i class="bi bi-list"></i> View All Bookings
-                        </a>
-                        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary btn-lg">
-                            <i class="bi bi-house"></i> Return Home
-                        </a>
-                    </div>
-
-                    <!-- Print Option -->
-                    <div class="text-center mt-3">
-                        <button onclick="window.print()" class="btn btn-outline-secondary">
-                            <i class="bi bi-printer"></i> Print Confirmation
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Footer -->
-                <div class="card-footer text-center text-muted">
-                    <small>
-                        <i class="bi bi-info-circle"></i>
-                        Please arrive at the airport at least 2 hours before departure
-                    </small>
-                </div>
-            </div>
-        </div>
-    </div>
+<h2>Booking Summary</h2>
+<div class="card p-3">
+    <h4>Ref: @Model.BookingReference</h4>
+    <p><strong>Passenger:</strong> @Model.PassengerName</p>
+    <p><strong>Flight:</strong> @Model.FlightNumber</p>
+    <p><strong>Route:</strong> @Model.From → @Model.To</p>
+    <p><strong>Departure:</strong> @Model.DepartureTime.ToString("f")</p>
+    <p><strong>Seat Class:</strong> @Model.SeatClass</p>
+    <p><strong>Passenger Type:</strong> @Model.PassengerType</p>
+    <p><strong>Seats:</strong> @Model.SeatCount</p>
+    <p><strong>Price per seat:</strong> @Model.PricePerSeat.ToString("C")</p>
+    <h4>Total: @Model.TotalPrice.ToString("C")</h4>
+    <p><strong>Paid:</strong> @(Model.IsPaid ? "Yes" : "No")</p>
+    <a asp-action="Index" class="btn btn-secondary">Back to Bookings</a>
 </div>
 
 @section Scripts {

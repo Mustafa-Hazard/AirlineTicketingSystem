@@ -14,140 +14,152 @@ namespace AirlineTicketingSystem.Controllers
             _context = context;
         }
 
-        // GET: Flights
+        // INDEX
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Flights.ToListAsync());
+            var flights = await _context.Flights.ToListAsync();
+            return View(flights);
         }
 
-        // GET: Flights/Details/5
-        public async Task<IActionResult> Details(int? id)
+        // DETAILS
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null) return BadRequest();
-
-            var flight = await _context.Flights.FirstOrDefaultAsync(f => f.Id == id);
+            var flight = await _context.Flights.FindAsync(id);
             if (flight == null) return NotFound();
-
             return View(flight);
         }
 
-        // GET: Flights/Create
+        // CREATE GET
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Flights/Create
+        // CREATE POST
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Flight flight)
+        public async Task<IActionResult> Create(Flight model)
         {
-            // Custom validation
-            if (flight.ArrivalTime <= flight.DepartureTime)
-                ModelState.AddModelError("ArrivalTime", "ArrivalTime time must be after DepartureTime time.");
+            if (!ModelState.IsValid) return View(model);
 
-            if (flight.AvailableSeats > flight.TotalSeats)
-                ModelState.AddModelError("AvailableSeats", "Seats available cannot exceed total seats.");
+            // initialize available seats from totals if not set
+            model.AvailableEconomySeats = model.EconomySeats;
+            model.AvailableBusinessSeats = model.BusinessSeats;
+            model.AvailableFirstClassSeats = model.FirstClassSeats;
 
-            if (!ModelState.IsValid)
-                return View(flight);
-
-            try
-            {
-                await _context.Flights.AddAsync(flight);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"Error saving flight: {ex.Message}");
-                return View(flight);
-            }
+            _context.Flights.Add(model);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Flights/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        // EDIT GET
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null) return BadRequest();
-
             var flight = await _context.Flights.FindAsync(id);
             if (flight == null) return NotFound();
-
             return View(flight);
         }
 
-        // POST: Flights/Edit/5
+        // EDIT POST
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Flight flight)
+        public async Task<IActionResult> Edit(Flight model)
         {
-            if (id != flight.Id) return BadRequest();
+            if (!ModelState.IsValid) return View(model);
 
-            // Custom validation
-            if (flight.ArrivalTime <= flight.DepartureTime)
-                ModelState.AddModelError("ArrivalTime", "ArrivalTime time must be after DepartureTime time.");
+            var existing = await _context.Flights.FindAsync(model.Id);
+            if (existing == null) return NotFound();
 
-            if (flight.AvailableSeats > flight.TotalSeats)
-                ModelState.AddModelError("AvailableSeats", "Seats available cannot exceed total seats.");
+            // update fields; careful with available seats -- if total decreased below available, adjust available
+            existing.FlightNumber = model.FlightNumber.Trim();
+            existing.Origin = model.Origin.Trim();
+            existing.Destination = model.Destination.Trim();
+            existing.FromAirport = model.FromAirport?.Trim();
+            existing.ToAirport = model.ToAirport?.Trim();
+            existing.DepartureTime = model.DepartureTime;
+            existing.ArrivalTime = model.ArrivalTime;
 
-            if (!ModelState.IsValid)
-                return View(flight);
+            // seats: adjust totals and ensure available seats are not greater than totals
+            existing.EconomySeats = model.EconomySeats;
+            existing.AvailableEconomySeats = Math.Min(existing.AvailableEconomySeats, model.EconomySeats);
+            existing.BusinessSeats = model.BusinessSeats;
+            existing.AvailableBusinessSeats = Math.Min(existing.AvailableBusinessSeats, model.BusinessSeats);
+            existing.FirstClassSeats = model.FirstClassSeats;
+            existing.AvailableFirstClassSeats = Math.Min(existing.AvailableFirstClassSeats, model.FirstClassSeats);
 
-            try
-            {
-                _context.Flights.Update(flight);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!FlightExists(flight.Id))
-                    return NotFound();
-                else
-                    throw;
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"Error updating flight: {ex.Message}");
-                return View(flight);
-            }
+            // prices
+            existing.EconomyPrice = model.EconomyPrice;
+            existing.BusinessPrice = model.BusinessPrice;
+            existing.FirstClassPrice = model.FirstClassPrice;
+
+            existing.IsDelayed = model.IsDelayed;
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Flights/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        //GET: Search Page
+public IActionResult Search()
         {
-            if (id == null) return BadRequest();
+            return View();
+        }
 
-            var flight = await _context.Flights.FirstOrDefaultAsync(f => f.Id == id);
+        //POST: Search Result
+[HttpPost]
+public async Task<IActionResult> Search(string? flightNumber, string? origin, string? destination, DateTime? date)
+        {
+            var query = _context.Flights.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(flightNumber))
+                query = query.Where(f => f.FlightNumber.Contains(flightNumber));
+
+            if (!string.IsNullOrWhiteSpace(origin))
+                query = query.Where(f => f.Origin.Contains(origin));
+
+            if (!string.IsNullOrWhiteSpace(destination))
+                query = query.Where(f => f.Destination.Contains(destination));
+
+            if (date.HasValue)
+                query = query.Where(f =>
+                    f.DepartureTime.Date == date.Value.Date ||
+                    f.ArrivalTime.Date == date.Value.Date
+                );
+
+            var results = await query.ToListAsync();
+
+            return View("SearchResults", results);
+        }
+        // DELETE GET
+        public async Task<IActionResult> Delete(int id)
+        {
+            var flight = await _context.Flights
+                .Include(f => f.Bookings)
+                .FirstOrDefaultAsync(f => f.Id == id);
+
             if (flight == null) return NotFound();
-
             return View(flight);
         }
 
-        // POST: Flights/Delete/5
+        // DELETE POST
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var flight = await _context.Flights.FindAsync(id);
+            var flight = await _context.Flights
+                .Include(f => f.Bookings)
+                .FirstOrDefaultAsync(f => f.Id == id);
+
             if (flight == null) return NotFound();
 
-            try
+            if (flight.Bookings != null && flight.Bookings.Any())
             {
-                _context.Flights.Remove(flight);
-                await _context.SaveChangesAsync();
+                TempData["Error"] = "Cannot delete flight that has bookings.";
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"Error deleting flight: {ex.Message}");
-                return View(flight);
-            }
-        }
 
-        private bool FlightExists(int id)
-        {
-            return _context.Flights.Any(f => f.Id == id);
+            _context.Flights.Remove(flight);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
     }
 }
