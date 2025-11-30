@@ -25,7 +25,7 @@ namespace AirlineTicketingSystem.Models.Entities
         [Column("Id")]
         public int Id { get; set; }
 
-        [Required, StringLength(50)]
+        [StringLength(50)]
         [Column("BookingReference")]
         public string BookingReference { get; set; } = string.Empty;
 
@@ -41,7 +41,7 @@ namespace AirlineTicketingSystem.Models.Entities
         [ForeignKey("PassengerId")]
         public Passenger? Passenger { get; set; }
 
-        [Required, StringLength(50)]
+        [StringLength(50)]
         [Column("UserId")]
         public string UserId { get; set; } = string.Empty;
 
@@ -62,7 +62,6 @@ namespace AirlineTicketingSystem.Models.Entities
         [Column("PassengerType")]
         public PassengerType PassengerType { get; set; } = PassengerType.Adult;
 
-        [Required]
         [Column(TypeName = "decimal(18,2)")]
         public decimal TotalPrice { get; set; }
 

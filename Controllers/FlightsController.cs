@@ -2,6 +2,8 @@
 using AirlineTicketingSystem.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using AirlineTicketingSystem.ViewModels;
+
 
 namespace AirlineTicketingSystem.Controllers
 {
@@ -13,7 +15,14 @@ namespace AirlineTicketingSystem.Controllers
         {
             _context = context;
         }
+        public IActionResult ViewAllWithBookings()
+        {
+            var flights = _context.Flights.Include(f => f.Bookings)
+              .ThenInclude(b => b.Passenger)
+                .ToList();
 
+            return View(flights);
+        }
         // INDEX
         public async Task<IActionResult> Index()
         {
@@ -35,14 +44,21 @@ namespace AirlineTicketingSystem.Controllers
             return View();
         }
 
-        // CREATE POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Flight model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+                return View(model);
 
-            // initialize available seats from totals if not set
+            // VALIDATION: ARRIVAL > DEPARTURE
+            if (model.ArrivalTime <= model.DepartureTime)
+            {
+                ModelState.AddModelError("ArrivalTime", "Arrival time must be later than departure time.");
+                return View(model);
+            }
+
+            // initialize available seats from totals
             model.AvailableEconomySeats = model.EconomySeats;
             model.AvailableBusinessSeats = model.BusinessSeats;
             model.AvailableFirstClassSeats = model.FirstClassSeats;
@@ -52,6 +68,7 @@ namespace AirlineTicketingSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
         // EDIT GET
         public async Task<IActionResult> Edit(int id)
         {
@@ -60,17 +77,23 @@ namespace AirlineTicketingSystem.Controllers
             return View(flight);
         }
 
-        // EDIT POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Flight model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+                return View(model);
+
+            // VALIDATION MUST BE HERE
+            if (model.ArrivalTime <= model.DepartureTime)
+            {
+                ModelState.AddModelError("ArrivalTime", "Arrival time must be later than departure time.");
+                return View(model);
+            }
 
             var existing = await _context.Flights.FindAsync(model.Id);
             if (existing == null) return NotFound();
 
-            // update fields; careful with available seats -- if total decreased below available, adjust available
             existing.FlightNumber = model.FlightNumber.Trim();
             existing.Origin = model.Origin.Trim();
             existing.Destination = model.Destination.Trim();
@@ -79,7 +102,6 @@ namespace AirlineTicketingSystem.Controllers
             existing.DepartureTime = model.DepartureTime;
             existing.ArrivalTime = model.ArrivalTime;
 
-            // seats: adjust totals and ensure available seats are not greater than totals
             existing.EconomySeats = model.EconomySeats;
             existing.AvailableEconomySeats = Math.Min(existing.AvailableEconomySeats, model.EconomySeats);
             existing.BusinessSeats = model.BusinessSeats;
@@ -87,7 +109,6 @@ namespace AirlineTicketingSystem.Controllers
             existing.FirstClassSeats = model.FirstClassSeats;
             existing.AvailableFirstClassSeats = Math.Min(existing.AvailableFirstClassSeats, model.FirstClassSeats);
 
-            // prices
             existing.EconomyPrice = model.EconomyPrice;
             existing.BusinessPrice = model.BusinessPrice;
             existing.FirstClassPrice = model.FirstClassPrice;
@@ -95,40 +116,35 @@ namespace AirlineTicketingSystem.Controllers
             existing.IsDelayed = model.IsDelayed;
 
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
-        //GET: Search Page
-public IActionResult Search()
-        {
-            return View();
-        }
 
-        //POST: Search Result
-[HttpPost]
-public async Task<IActionResult> Search(string? flightNumber, string? origin, string? destination, DateTime? date)
+        // SEARCH (GET)
+        public IActionResult Search(FlightSearchVM vm)
         {
             var query = _context.Flights.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(flightNumber))
-                query = query.Where(f => f.FlightNumber.Contains(flightNumber));
+            if (!string.IsNullOrWhiteSpace(vm.Origin))
+                query = query.Where(f => f.Origin.Contains(vm.Origin));
 
-            if (!string.IsNullOrWhiteSpace(origin))
-                query = query.Where(f => f.Origin.Contains(origin));
+            if (!string.IsNullOrWhiteSpace(vm.Destination))
+                query = query.Where(f => f.Destination.Contains(vm.Destination));
 
-            if (!string.IsNullOrWhiteSpace(destination))
-                query = query.Where(f => f.Destination.Contains(destination));
+            if (vm.DepartureDate.HasValue)
+            {
+                var date = vm.DepartureDate.Value.Date;
+                query = query.Where(f => f.DepartureTime.Date == date);
+            }
 
-            if (date.HasValue)
-                query = query.Where(f =>
-                    f.DepartureTime.Date == date.Value.Date ||
-                    f.ArrivalTime.Date == date.Value.Date
-                );
+            vm.Results = query
+                .OrderBy(f => f.DepartureTime)
+                .ToList();
 
-            var results = await query.ToListAsync();
-
-            return View("SearchResults", results);
+            return View(vm);
         }
+
         // DELETE GET
         public async Task<IActionResult> Delete(int id)
         {

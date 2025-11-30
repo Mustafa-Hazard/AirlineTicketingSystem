@@ -68,5 +68,6 @@ namespace AirlineTicketingSystem.Models.Entities
         public bool IsDelayed { get; set; }
 
         public ICollection<Booking>? Bookings { get; set; }
+
     }
 }

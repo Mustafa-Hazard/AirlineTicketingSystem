@@ -2,6 +2,7 @@
 {
     public class BookingSummaryViewModel
     {
+        public int Id { get; set; }
         public string BookingReference { get; set; } = string.Empty;
         public string PassengerName { get; set; } = string.Empty;
         public string FlightNumber { get; set; } = string.Empty;

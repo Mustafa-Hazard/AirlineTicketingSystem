@@ -1,0 +1,62 @@
+﻿@model IEnumerable<AirlineTicketingSystem.Models.Entities.Flight>
+
+@{
+    ViewData["Title"] = "Flights & Bookings";
+    var isFirst = true;
+}
+
+<h1 class="mb-4">Flights & Their Bookings</h1>
+
+<div class="accordion" id="accordionExample">
+
+    @foreach (var flight in Model)
+    {
+        <div class="accordion-item">
+
+            <!-- HEADER -->
+            <h2 class="accordion-header" id="heading@flight.Id">
+                <button class="accordion-button @(isFirst ? "" : "collapsed")"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="@($"#collapse{flight.Id}")"
+                        aria-expanded="@(isFirst ? "true" : "false")"
+                        aria-controls="@($"collapse{flight.Id}")">
+
+                    @flight.FlightNumber — @flight.Origin → @flight.Destination
+                </button>
+            </h2>
+
+            <!-- BODY -->
+            <div id="@($"collapse{flight.Id}")"
+                 class="accordion-collapse collapse @(isFirst ? "show" : "")"
+                 aria-labelledby="heading@flight.Id"
+                 data-bs-parent="#accordionExample">
+
+                <div class="accordion-body">
+
+                    @if (flight.Bookings == null || !flight.Bookings.Any())
+                    {
+                        <strong>No bookings found for this flight.</strong>
+                    }
+                    else
+                    {
+                        <ul class="list-group">
+                            @foreach (var booking in flight.Bookings)
+                            {
+                                <li class="list-group-item">
+                                    <strong>Booking ID:</strong> @booking.BookingReference <br />
+                                    <strong>Date:</strong> @booking.BookingDate.ToShortDateString() <br />
+                                    <strong>Passenger:</strong> @booking.Passenger?.FullName
+                                </li>
+                            }
+                        </ul>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+        isFirst = false;
+    }
+
+</div>

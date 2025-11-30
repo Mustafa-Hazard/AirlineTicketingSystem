@@ -59,38 +59,41 @@
         <div class="col-md-4 mb-3">
             <label asp-for="EconomySeats"></label>
             <input asp-for="EconomySeats" class="form-control" />
+            <span asp-validation-for="EconomySeats" class="text-danger"></span>
         </div>
 
         <div class="col-md-4 mb-3">
             <label asp-for="BusinessSeats"></label>
             <input asp-for="BusinessSeats" class="form-control" />
+            <span asp-validation-for="BusinessSeats" class="text-danger"></span>
         </div>
 
         <div class="col-md-4 mb-3">
             <label asp-for="FirstClassSeats"></label>
             <input asp-for="FirstClassSeats" class="form-control" />
+            <span asp-validation-for="FirstClassSeats" class="text-danger"></span>
         </div>
-
-        <hr />
 
         <h4>Prices</h4>
 
         <div class="col-md-4 mb-3">
             <label asp-for="EconomyPrice"></label>
             <input asp-for="EconomyPrice" class="form-control" />
+            <span asp-validation-for="EconomyPrice" class="text-danger"></span>
         </div>
 
         <div class="col-md-4 mb-3">
             <label asp-for="BusinessPrice"></label>
             <input asp-for="BusinessPrice" class="form-control" />
+            <span asp-validation-for="BusinessPrice" class="text-danger"></span>
         </div>
 
         <div class="col-md-4 mb-3">
             <label asp-for="FirstClassPrice"></label>
             <input asp-for="FirstClassPrice" class="form-control" />
+            <span asp-validation-for="FirstClassPrice" class="text-danger"></span>
         </div>
 
-    </div>
 
     <button type="submit" class="btn btn-primary mt-3">Create Flight</button>
 </form>

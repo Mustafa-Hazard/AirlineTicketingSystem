@@ -1,5 +1,4 @@
 ﻿@model AirlineTicketingSystem.Models.Entities.Booking
-
 @{
     ViewData["Title"] = "Create Booking";
 }
@@ -7,13 +6,14 @@
 <h2>Create Booking</h2>
 <hr />
 
-<form asp-action="Create" method="post" class="row g-3">
+<div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<form asp-action="Create" asp-controller="Booking" method="post" class="row g-3">
+    @Html.AntiForgeryToken()
 
     <div class="col-md-6">
         <label asp-for="FlightId" class="form-label"></label>
-        <select asp-for="FlightId" class="form-select" asp-items="ViewBag.FlightId">
+        <select asp-for="FlightId" class="form-select" asp-items="ViewBag.FlightId" required>
             <option value="">-- Select Flight --</option>
         </select>
         <span asp-validation-for="FlightId" class="text-danger"></span>
@@ -21,7 +21,7 @@
 
     <div class="col-md-6">
         <label asp-for="PassengerId" class="form-label"></label>
-        <select asp-for="PassengerId" class="form-select" asp-items="ViewBag.PassengerId">
+        <select asp-for="PassengerId" class="form-select" asp-items="ViewBag.PassengerId" required>
             <option value="">-- Select Passenger --</option>
         </select>
         <span asp-validation-for="PassengerId" class="text-danger"></span>
@@ -29,60 +29,39 @@
 
     <div class="col-md-6">
         <label asp-for="SeatClass" class="form-label"></label>
-        <select asp-for="SeatClass" class="form-select" asp-items="ViewBag.SeatClass"></select>
+        <select asp-for="SeatClass" class="form-select" asp-items="ViewBag.SeatClass" required></select>
         <span asp-validation-for="SeatClass" class="text-danger"></span>
     </div>
 
     <div class="col-md-6">
         <label asp-for="PassengerType" class="form-label"></label>
-        <select asp-for="PassengerType" class="form-select" asp-items="ViewBag.PassengerType"></select>
+        <select asp-for="PassengerType" class="form-select" asp-items="ViewBag.PassengerType" required></select>
         <span asp-validation-for="PassengerType" class="text-danger"></span>
     </div>
 
     <div class="col-md-4">
         <label asp-for="SeatCount" class="form-label"></label>
-        <input asp-for="SeatCount" type="number" min="1" max="10" class="form-control" />
+        <input asp-for="SeatCount" type="number" min="1" max="10" value="1" class="form-control" required />
         <span asp-validation-for="SeatCount" class="text-danger"></span>
-    </div>
-
-    <div class="col-md-8">
-        <label asp-for="UserId" class="form-label"></label>
-        <input asp-for="UserId" class="form-control" />
-        <span asp-validation-for="UserId" class="text-danger"></span>
-    </div>
-
-    <div class="col-md-6">
-        <label asp-for="BookingReference" class="form-label"></label>
-        <input asp-for="BookingReference" class="form-control" />
-        <span asp-validation-for="BookingReference" class="text-danger"></span>
     </div>
 
     <div class="col-md-6">
         <label asp-for="BookingDate" class="form-label"></label>
-        <input asp-for="BookingDate" type="datetime-local" class="form-control" />
+        <input asp-for="BookingDate" type="datetime-local" class="form-control" required />
         <span asp-validation-for="BookingDate" class="text-danger"></span>
     </div>
 
-    <div class="col-md-6">
-        <label asp-for="TotalPrice" class="form-label"></label>
-        <input asp-for="TotalPrice" type="number" step="0.01" class="form-control" />
-        <span asp-validation-for="TotalPrice" class="text-danger"></span>
-    </div>
-
     <div class="col-md-6 form-check mt-4">
-        <input asp-for="IsPaid" class="form-check-input" />
+        <input asp-for="IsPaid" type="checkbox" class="form-check-input" />
         <label asp-for="IsPaid" class="form-check-label"></label>
     </div>
 
     <div class="col-12">
-        <button class="btn btn-primary">Create</button>
-        <a asp-action="Index" class="btn btn-secondary">Back</a>
+        <button type="submit" class="btn btn-primary">Create Booking</button>
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
     </div>
-
 </form>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <partial name="_ValidationScriptsPartial" />
 }

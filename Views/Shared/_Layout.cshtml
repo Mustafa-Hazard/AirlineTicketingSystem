@@ -60,6 +60,10 @@
                                 <a class="dropdown-item" asp-action="Create" asp-controller="Flights">
                                     <i class="bi bi-plus-circle"></i> Create
                                 </a>
+                                <a class="dropdown-item" asp-controller="Flights" asp-action="ViewAllWithBookings">
+                                    <i class="bi bi"></i> View Flights with Bookings
+                                </a>
+
                             </div>
                         </li>
 
@@ -80,28 +84,33 @@
 
                         <!-- Bookings -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                                <i class="bi bi-journal-check"></i> Bookings
-                            </a>
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Bookings</a>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" asp-action="Index" asp-controller="Booking">
-                                    <i class="bi bi-card-list"></i> View All
-                                </a>
-                                <a class="dropdown-item" asp-action="Create" asp-controller="Booking">
-                                    <i class="bi bi-plus-circle"></i> Create
-                                </a>
-                            </div>
+
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Booking" asp-action="Index">View All</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Booking" asp-action="Create">Create</a>
+                             </div>
                         </li>
 
                     </ul>
 
                     <!-- Search Flights -->
-                    <form class="d-flex" asp-controller="Flights" asp-action="Search" method="get">
-                        <input class="form-control me-2" name="query" type="search" placeholder="Search flights..." />
-                        <button class="btn btn-outline-light" type="submit">
+                    <form class="search-form d-flex align-items-center"
+                          method="get"
+                          asp-controller="Flights"
+                          asp-action="Search">
+
+                        <!-- This maps to FlightSearchViewModel.Origin -->
+                        <input type="text"
+                               name="Origin"
+                               placeholder="Search flights by origin name ..."
+                               title="Search flights by origin" />
+
+                        <button type="submit" title="Search">
                             <i class="bi bi-search"></i>
                         </button>
                     </form>
+
 
                     <!-- Dark Mode Toggle -->
                     <button class="btn btn-outline-light ms-3" id="toggleTheme">

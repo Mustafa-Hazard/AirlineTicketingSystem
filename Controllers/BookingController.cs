@@ -16,6 +16,15 @@ namespace AirlineTicketingSystem.Controllers
             _context = context;
         }
 
+        // small helper to fill dropdown lists
+        private void PopulateDropdowns(Booking booking)
+        {
+            ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
+            ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
+            ViewBag.SeatClass = new SelectList(Enum.GetValues(typeof(SeatClass)), booking.SeatClass);
+            ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)), booking.PassengerType);
+        }
+
         // INDEX
         public async Task<IActionResult> Index()
         {
@@ -23,6 +32,7 @@ namespace AirlineTicketingSystem.Controllers
                 .Include(b => b.Flight)
                 .Include(b => b.Passenger)
                 .ToListAsync();
+
             return View(bookings);
         }
 
@@ -33,17 +43,16 @@ namespace AirlineTicketingSystem.Controllers
                 .Include(b => b.Flight)
                 .Include(b => b.Passenger)
                 .FirstOrDefaultAsync(b => b.Id == id);
+
             if (booking == null) return NotFound();
+
             return View(booking);
         }
 
         // CREATE GET
         public IActionResult Create()
         {
-            ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber");
-            ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName");
-            ViewBag.SeatClass = new SelectList(Enum.GetValues(typeof(SeatClass)));
-            ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)));
+            PopulateDropdowns(new Booking());
             return View();
         }
 
@@ -52,12 +61,12 @@ namespace AirlineTicketingSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Booking booking)
         {
+            // generate reference first so [Required] on BookingReference (if any) will pass
+            booking.BookingReference = GenerateBookingReference();
+
             if (!ModelState.IsValid)
             {
-                ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
-                ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
-                ViewBag.SeatClass = new SelectList(Enum.GetValues(typeof(SeatClass)), booking.SeatClass);
-                ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)), booking.PassengerType);
+                PopulateDropdowns(booking);
                 return View(booking);
             }
 
@@ -65,10 +74,27 @@ namespace AirlineTicketingSystem.Controllers
             if (flight == null)
             {
                 ModelState.AddModelError("", "Selected flight not found.");
+                PopulateDropdowns(booking);
                 return View(booking);
             }
 
-            // price per class
+            // prevent booking with past date
+            if (booking.BookingDate < DateTime.Now)
+            {
+                ModelState.AddModelError("BookingDate", "Booking date cannot be in the past.");
+                PopulateDropdowns(booking);
+                return View(booking);
+            }
+
+            // prevent booking after flight departure
+            if (flight.DepartureTime <= DateTime.Now)
+            {
+                ModelState.AddModelError("", "This flight has already departed. Cannot book.");
+                PopulateDropdowns(booking);
+                return View(booking);
+            }
+
+            // Price calculation
             decimal basePrice = booking.SeatClass switch
             {
                 SeatClass.Economy => flight.EconomyPrice,
@@ -77,7 +103,6 @@ namespace AirlineTicketingSystem.Controllers
                 _ => flight.EconomyPrice
             };
 
-            // passenger type multiplier
             decimal multiplier = booking.PassengerType switch
             {
                 PassengerType.Adult => 1.0m,
@@ -88,7 +113,7 @@ namespace AirlineTicketingSystem.Controllers
 
             decimal pricePerSeat = basePrice * multiplier;
 
-            // availability check per class
+            // seat availability check
             bool notEnough = booking.SeatClass switch
             {
                 SeatClass.Economy => booking.SeatCount > flight.AvailableEconomySeats,
@@ -100,10 +125,7 @@ namespace AirlineTicketingSystem.Controllers
             if (notEnough)
             {
                 ModelState.AddModelError("SeatCount", "Not enough seats available in the selected class.");
-                ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
-                ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
-                ViewBag.SeatClass = new SelectList(Enum.GetValues(typeof(SeatClass)), booking.SeatClass);
-                ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)), booking.PassengerType);
+                PopulateDropdowns(booking);
                 return View(booking);
             }
 
@@ -122,10 +144,11 @@ namespace AirlineTicketingSystem.Controllers
             }
 
             booking.TotalPrice = pricePerSeat * booking.SeatCount;
-            booking.BookingReference = GenerateBookingReference();
 
-            // placeholder user id; replace with actual user when Identity present
-            booking.UserId = User?.Identity?.IsAuthenticated == true ? User.Identity.Name ?? "USER" : "GUEST";
+            // assign user id (simple)
+            booking.UserId = User?.Identity?.IsAuthenticated == true
+                ? (User.Identity.Name ?? "USER")
+                : "GUEST";
 
             _context.Flights.Update(flight);
             _context.Bookings.Add(booking);
@@ -145,11 +168,7 @@ namespace AirlineTicketingSystem.Controllers
             var booking = await _context.Bookings.FindAsync(id);
             if (booking == null) return NotFound();
 
-            ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
-            ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
-            ViewBag.SeatClass = new SelectList(Enum.GetValues(typeof(SeatClass)), booking.SeatClass);
-            ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)), booking.PassengerType);
-
+            PopulateDropdowns(booking);
             return View(booking);
         }
 
@@ -160,10 +179,7 @@ namespace AirlineTicketingSystem.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
-                ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
-                ViewBag.SeatClass = new SelectList(Enum.GetValues(typeof(SeatClass)), booking.SeatClass);
-                ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)), booking.PassengerType);
+                PopulateDropdowns(booking);
                 return View(booking);
             }
 
@@ -173,10 +189,10 @@ namespace AirlineTicketingSystem.Controllers
 
             if (existing == null) return NotFound();
 
-            // If class or seat count changes, we need to adjust flight availability
+            // If class or seat count changes, adjust flight availability
             if (existing.SeatClass != booking.SeatClass || existing.SeatCount != booking.SeatCount)
             {
-                // restore previous seats
+                // restore previous seats on old flight
                 var flight = await _context.Flights.FindAsync(existing.FlightId);
                 if (flight == null) return BadRequest();
 
@@ -193,7 +209,7 @@ namespace AirlineTicketingSystem.Controllers
                         break;
                 }
 
-                // check new availability
+                // check new availability on same flight (or we could support changing flights too)
                 bool notEnough = booking.SeatClass switch
                 {
                     SeatClass.Economy => booking.SeatCount > flight.AvailableEconomySeats,
@@ -205,10 +221,7 @@ namespace AirlineTicketingSystem.Controllers
                 if (notEnough)
                 {
                     ModelState.AddModelError("SeatCount", "Not enough seats available for the updated selection.");
-                    ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
-                    ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
-                    ViewBag.SeatClass = new SelectList(Enum.GetValues(typeof(SeatClass)), booking.SeatClass);
-                    ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)), booking.PassengerType);
+                    PopulateDropdowns(booking);
                     return View(booking);
                 }
 
@@ -231,13 +244,16 @@ namespace AirlineTicketingSystem.Controllers
 
             // recalc price
             var selectedFlight = await _context.Flights.FindAsync(booking.FlightId);
+            if (selectedFlight == null) return BadRequest();
+
             decimal basePrice = booking.SeatClass switch
             {
-                SeatClass.Economy => selectedFlight!.EconomyPrice,
-                SeatClass.Business => selectedFlight!.BusinessPrice,
-                SeatClass.FirstClass => selectedFlight!.FirstClassPrice,
-                _ => selectedFlight!.EconomyPrice
+                SeatClass.Economy => selectedFlight.EconomyPrice,
+                SeatClass.Business => selectedFlight.BusinessPrice,
+                SeatClass.FirstClass => selectedFlight.FirstClassPrice,
+                _ => selectedFlight.EconomyPrice
             };
+
             decimal multiplier = booking.PassengerType switch
             {
                 PassengerType.Adult => 1.0m,
@@ -245,6 +261,7 @@ namespace AirlineTicketingSystem.Controllers
                 PassengerType.Infant => 0.2m,
                 _ => 1.0m
             };
+
             booking.TotalPrice = basePrice * multiplier * booking.SeatCount;
 
             // update editable fields
@@ -268,7 +285,9 @@ namespace AirlineTicketingSystem.Controllers
                 .Include(b => b.Flight)
                 .Include(b => b.Passenger)
                 .FirstOrDefaultAsync(b => b.Id == id);
+
             if (booking == null) return NotFound();
+
             return View(booking);
         }
 
@@ -282,7 +301,6 @@ namespace AirlineTicketingSystem.Controllers
                 .FirstOrDefaultAsync(b => b.Id == id);
 
             if (booking == null) return NotFound();
-
 
             // restore seats back to flight based on class
             var flight = booking.Flight;
@@ -307,6 +325,23 @@ namespace AirlineTicketingSystem.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkPaid(int id)
+        {
+            var booking = await _context.Bookings.FindAsync(id);
+            if (booking == null) return NotFound();
+
+            if (!booking.IsPaid)
+            {
+                booking.IsPaid = true;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Summary", new { id = booking.Id });
+        }
+
+
 
         // SUMMARY
         public async Task<IActionResult> Summary(int id)
@@ -320,6 +355,7 @@ namespace AirlineTicketingSystem.Controllers
 
             var vm = new BookingSummaryViewModel
             {
+                Id = booking.Id,
                 BookingReference = booking.BookingReference,
                 PassengerName = booking.Passenger?.FullName ?? "",
                 FlightNumber = booking.Flight?.FlightNumber ?? "",
@@ -327,7 +363,9 @@ namespace AirlineTicketingSystem.Controllers
                 To = booking.Flight?.Destination ?? "",
                 DepartureTime = booking.Flight?.DepartureTime ?? DateTime.MinValue,
                 SeatCount = booking.SeatCount,
-                PricePerSeat = booking.TotalPrice / booking.SeatCount,
+                PricePerSeat = booking.SeatCount > 0
+                    ? booking.TotalPrice / booking.SeatCount
+                    : booking.TotalPrice,
                 TotalPrice = booking.TotalPrice,
                 IsPaid = booking.IsPaid,
                 SeatClass = booking.SeatClass.ToString(),

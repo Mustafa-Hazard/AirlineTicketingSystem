@@ -1,23 +1,202 @@
 ﻿@model AirlineTicketingSystem.Models.ViewModels.BookingSummaryViewModel
 @{
-ViewData["Title"] = "Booking Summary";
+    ViewData["Title"] = "Booking Summary";
 }
+
+<div class="alert alert-success mb-4">
+    <h3><i class="bi bi-check-circle-fill"></i> Booking Confirmed!</h3>
+    <h4>Booking Reference: <strong>@Model.BookingReference</strong></h4>
+</div>
+
 <h2>Booking Summary</h2>
-<div class="card p-3">
-    <h4>Ref: @Model.BookingReference</h4>
-    <p><strong>Passenger:</strong> @Model.PassengerName</p>
-    <p><strong>Flight:</strong> @Model.FlightNumber</p>
-    <p><strong>Route:</strong> @Model.From → @Model.To</p>
-    <p><strong>Departure:</strong> @Model.DepartureTime.ToString("f")</p>
-    <p><strong>Seat Class:</strong> @Model.SeatClass</p>
-    <p><strong>Passenger Type:</strong> @Model.PassengerType</p>
-    <p><strong>Seats:</strong> @Model.SeatCount</p>
-    <p><strong>Price per seat:</strong> @Model.PricePerSeat.ToString("C")</p>
-    <h4>Total: @Model.TotalPrice.ToString("C")</h4>
-    <p><strong>Paid:</strong> @(Model.IsPaid ? "Yes" : "No")</p>
-    <a asp-action="Index" class="btn btn-secondary">Back to Bookings</a>
+<hr />
+
+<div class="accordion" id="bookingSummaryAccordion">
+
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingPassenger">
+            <button class="accordion-button"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapsePassenger"
+                    aria-expanded="true"
+                    aria-controls="collapsePassenger">
+                <i class="bi bi-person-fill me-2"></i> Passenger Information
+            </button>
+        </h2>
+        <div id="collapsePassenger"
+             class="accordion-collapse collapse show"
+             aria-labelledby="headingPassenger"
+             data-bs-parent="#bookingSummaryAccordion">
+            <div class="accordion-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Passenger Name:</label>
+                        <p class="form-control-plaintext">@Model.PassengerName</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Passenger Type:</label>
+                        <p class="form-control-plaintext">@Model.PassengerType</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Payment Status:</label>
+                        <p class="form-control-plaintext">
+                            @if (Model.IsPaid)
+                            {
+                                <span class="badge bg-success">✓ Paid</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">⚠ Pending Payment</span>
+                            }
+                        </p>
+                    </div>
+                    @if (!Model.IsPaid)
+                    {
+                        <div class="col-md-12 mt-3">
+                            <form asp-action="MarkPaid" method="post" class="d-inline">
+                                <input type="hidden" asp-for="Id" />
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-credit-card"></i> Mark as Paid
+                                </button>
+                            </form>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingFlight">
+            <button class="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapseFlight"
+                    aria-expanded="false"
+                    aria-controls="collapseFlight">
+                <i class="bi bi-airplane-fill me-2"></i> Flight Details
+            </button>
+        </h2>
+        <div id="collapseFlight"
+             class="accordion-collapse collapse"
+             aria-labelledby="headingFlight"
+             data-bs-parent="#bookingSummaryAccordion">
+            <div class="accordion-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Flight Number:</label>
+                        <p class="form-control-plaintext">@Model.FlightNumber</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Departure Time:</label>
+                        <p class="form-control-plaintext">@Model.DepartureTime.ToString("dd MMM yyyy, hh:mm tt")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">From:</label>
+                        <p class="form-control-plaintext">@Model.From</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">To:</label>
+                        <p class="form-control-plaintext">@Model.To</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingSeat">
+            <button class="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapseSeat"
+                    aria-expanded="false"
+                    aria-controls="collapseSeat">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i> Seat Details
+            </button>
+        </h2>
+        <div id="collapseSeat"
+             class="accordion-collapse collapse"
+             aria-labelledby="headingSeat"
+             data-bs-parent="#bookingSummaryAccordion">
+            <div class="accordion-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Seat Class:</label>
+                        <p class="form-control-plaintext">@Model.SeatClass</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Number of Seats:</label>
+                        <p class="form-control-plaintext">@Model.SeatCount</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Price per Seat:</label>
+                        <p class="form-control-plaintext">$@Model.PricePerSeat.ToString("N2")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingPayment">
+            <button class="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapsePayment"
+                    aria-expanded="false"
+                    aria-controls="collapsePayment">
+                <i class="bi bi-currency-dollar me-2"></i> Payment Summary
+            </button>
+        </h2>
+        <div id="collapsePayment"
+             class="accordion-collapse collapse"
+             aria-labelledby="headingPayment"
+             data-bs-parent="#bookingSummaryAccordion">
+            <div class="accordion-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Price per Seat:</label>
+                        <p class="form-control-plaintext">$@Model.PricePerSeat.ToString("N2")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Number of Seats:</label>
+                        <p class="form-control-plaintext">× @Model.SeatCount</p>
+                    </div>
+                    <div class="col-12">
+                        <hr />
+                        <label class="form-label fw-bold fs-5">Total Amount:</label>
+                        <p class="form-control-plaintext fs-4 text-success fw-bold">
+                            $@Model.TotalPrice.ToString("N2")
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="col-12 mt-4">
+    <a asp-action="Index" class="btn btn-primary">
+        <i class="bi bi-list"></i> View All Bookings
+    </a>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Create Another Booking
+    </a>
+    <button onclick="window.print()" class="btn btn-secondary">
+        <i class="bi bi-printer"></i> Print
+    </button>
 </div>
 
 @section Scripts {
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script>
+        window.addEventListener('beforeprint', function() {
+            document.querySelectorAll('.accordion-collapse').forEach(function(el) {
+                el.classList.add('show');
+            });
+        });
+    </script>
 }

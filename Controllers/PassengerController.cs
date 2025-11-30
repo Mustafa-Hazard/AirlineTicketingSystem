@@ -74,6 +74,7 @@ namespace AirlineTicketingSystem.Controllers
             existingPassenger.Age = passenger.Age;
             existingPassenger.Nationality = passenger.Nationality;
             existingPassenger.ContactEmail = passenger.ContactEmail;
+            existingPassenger.PhoneNumber = passenger.PhoneNumber;
 
             await _context.SaveChangesAsync();
 

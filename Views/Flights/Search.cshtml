@@ -1,0 +1,70 @@
+﻿@model AirlineTicketingSystem.ViewModels.FlightSearchVM
+
+@{
+    ViewData["Title"] = "Search Flights";
+}
+
+<h2>Search Flights</h2>
+<hr />
+
+<form method="get" asp-action="Search" class="row g-3">
+
+    <div class="col-md-4">
+        <label asp-for="Origin" class="form-label"></label>
+        <input asp-for="Origin" class="form-control" placeholder="Karachi" />
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="Destination" class="form-label"></label>
+        <input asp-for="Destination" class="form-control" placeholder="Dubai" />
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="DepartureDate" class="form-label"></label>
+        <input asp-for="DepartureDate" type="date" class="form-control" />
+    </div>
+
+    <div class="col-12 mt-2">
+        <button type="submit" class="btn btn-primary">Search</button>
+        <a asp-action="Index" class="btn btn-secondary">Back</a>
+    </div>
+</form>
+
+<hr />
+
+@if (Model.Results != null && Model.Results.Any())
+{
+    <h4>Results (@Model.Results.Count)</h4>
+
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Flight #</th>
+                <th>Origin</th>
+                <th>Destination</th>
+                <th>Departure</th>
+                <th>Arrival</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var f in Model.Results)
+            {
+                <tr>
+                    <td>@f.FlightNumber</td>
+                    <td>@f.Origin</td>
+                    <td>@f.Destination</td>
+                    <td>@f.DepartureTime</td>
+                    <td>@f.ArrivalTime</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@f.Id" class="btn btn-sm btn-info">Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No flights found. Try a different search.</p>
+}
