@@ -189,6 +189,9 @@
     <button onclick="window.print()" class="btn btn-secondary">
         <i class="bi bi-printer"></i> Print
     </button>
+    <a asp-action="ETicket" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+        <i class="bi bi-file-earmark-pdf"></i> Download E-Ticket (PDF)
+    </a>
 </div>
 
 @section Scripts {

@@ -1,0 +1,74 @@
+﻿@model AirlineTicketingSystem.Models.ViewModels.RevenueSummaryVM
+
+@{
+    ViewData["Title"] = "Revenue Statistics";
+}
+
+<h2>Revenue Statistics</h2>
+<hr />
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-primary">
+            <div class="card-body">
+                <h5 class="card-title">Total Bookings</h5>
+                <p class="card-text fs-4">@Model.TotalBookings</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body">
+                <h5 class="card-title">Paid Bookings</h5>
+                <p class="card-text fs-4">@Model.PaidBookings</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body">
+                <h5 class="card-title">Unpaid Bookings</h5>
+                <p class="card-text fs-4">@Model.UnpaidBookings</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-info">
+            <div class="card-body">
+                <h5 class="card-title">Total Paid Revenue</h5>
+                <p class="card-text fs-5">@Model.TotalPaidRevenue.ToString("C")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Revenue per Flight</h4>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Flight #</th>
+            <th>Route</th>
+            <th>Departure</th>
+            <th>Bookings</th>
+            <th>Seats Booked</th>
+            <th>Paid Revenue</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var row in Model.PerFlight)
+        {
+            <tr>
+                <td>@row.FlightNumber</td>
+                <td>@row.Origin → @row.Destination</td>
+                <td>@row.DepartureTime.ToString("dd MMM yyyy, HH:mm")</td>
+                <td>@row.BookingCount</td>
+                <td>@row.SeatsBooked</td>
+                <td>@row.PaidRevenue.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>

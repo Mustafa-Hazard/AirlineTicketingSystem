@@ -1,9 +1,11 @@
 ﻿using AirlineTicketingSystem.Models;
 using AirlineTicketingSystem.Models.Entities;
 using AirlineTicketingSystem.Models.ViewModels;
+using AirlineTicketingSystem.Pdf;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Fluent;
 
 namespace AirlineTicketingSystem.Controllers
 {
@@ -373,6 +375,43 @@ namespace AirlineTicketingSystem.Controllers
             };
 
             return View(vm);
+        }
+        // E-TICKET PDF
+        [HttpGet]
+        public async Task<IActionResult> ETicket(int id)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Flight)
+                .Include(b => b.Passenger)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (booking == null)
+                return NotFound();
+
+            var vm = new BookingSummaryViewModel
+            {
+                Id = booking.Id,
+                BookingReference = booking.BookingReference,
+                PassengerName = booking.Passenger?.FullName ?? "",
+                FlightNumber = booking.Flight?.FlightNumber ?? "",
+                From = booking.Flight?.Origin ?? "",
+                To = booking.Flight?.Destination ?? "",
+                DepartureTime = booking.Flight?.DepartureTime ?? DateTime.MinValue,
+                SeatCount = booking.SeatCount,
+                PricePerSeat = booking.SeatCount > 0
+                    ? booking.TotalPrice / booking.SeatCount
+                    : booking.TotalPrice,
+                TotalPrice = booking.TotalPrice,
+                IsPaid = booking.IsPaid,
+                SeatClass = booking.SeatClass.ToString(),
+                PassengerType = booking.PassengerType.ToString()
+            };
+
+            var document = new ETicketDocument(vm);
+            var pdfBytes = document.GeneratePdf();
+
+            var fileName = $"ETicket_{vm.BookingReference}.pdf";
+            return File(pdfBytes, "application/pdf", fileName);
         }
     }
 }

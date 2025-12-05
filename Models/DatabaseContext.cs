@@ -11,7 +11,9 @@ namespace AirlineTicketingSystem.Models
 
         public DbSet<Flight> Flights { get; set; }
         public DbSet<Passenger> Passengers { get; set; } 
-        public DbSet<Booking> Bookings { get; set; } 
+        public DbSet<Booking> Bookings { get; set; }
+        public DbSet<User> Users { get; set; }
+
 
     }
 }
