@@ -1,9 +1,10 @@
 ﻿using AirlineTicketingSystem.Models;
 using AirlineTicketingSystem.Models.Entities;
 using AirlineTicketingSystem.ViewModels;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace AirlineTicketingSystem.Controllers
 {
@@ -16,18 +17,35 @@ namespace AirlineTicketingSystem.Controllers
             _context = context;
         }
 
-        // === Helper methods for RBAC ===
+        // ========== AUTH / ROLE HELPERS ==========
+
+        // Simple check: is any user logged in?
         private bool IsLoggedIn()
         {
             return HttpContext.Session.GetInt32("UserId") != null;
         }
 
+        // Only Admin role can manage flights
         private bool IsAdmin()
         {
             return HttpContext.Session.GetString("UserRole") == "Admin";
         }
 
-        // VIEW ALL WITH BOOKINGS (admin-style page)
+        // Load airports into ViewBag for dropdowns
+        private void PopulateAirports()
+        {
+            var airports = _context.Airports
+                .OrderBy(a => a.City)
+                .ThenBy(a => a.Name)
+                .ToList();
+
+            // value = City, text = "City - Name (IATA)"
+            ViewBag.Airports = new SelectList(airports, "City", "DisplayName");
+        }
+
+        // ========== ADMIN VIEW: FLIGHTS WITH BOOKINGS ==========
+
+        // Admin page: each flight with its bookings (accordion style)
         public IActionResult ViewAllWithBookings()
         {
             if (!IsAdmin())
@@ -41,14 +59,16 @@ namespace AirlineTicketingSystem.Controllers
             return View(flights);
         }
 
-        // INDEX - everyone can see flights list
+        // ========== PUBLIC PAGES: LIST + DETAILS ==========
+
+        // Everyone can see the list of flights
         public async Task<IActionResult> Index()
         {
             var flights = await _context.Flights.ToListAsync();
             return View(flights);
         }
 
-        // DETAILS - everyone can see flight details
+        // Everyone can see individual flight details
         public async Task<IActionResult> Details(int id)
         {
             var flight = await _context.Flights.FindAsync(id);
@@ -56,16 +76,19 @@ namespace AirlineTicketingSystem.Controllers
             return View(flight);
         }
 
-        // CREATE GET - Admin only
+        // ========== CREATE FLIGHT (ADMIN ONLY) ==========
+
+        // GET: show empty form
         public IActionResult Create()
         {
             if (!IsAdmin())
                 return RedirectToAction("Login", "Auth");
 
+            PopulateAirports();   // needed for Origin/Destination dropdowns
             return View();
         }
 
-        // CREATE POST - Admin only
+        // POST: save new flight
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Flight model)
@@ -73,17 +96,33 @@ namespace AirlineTicketingSystem.Controllers
             if (!IsAdmin())
                 return RedirectToAction("Login", "Auth");
 
-            if (!ModelState.IsValid)
-                return View(model);
-
-            // VALIDATION: ARRIVAL > DEPARTURE
-            if (model.ArrivalTime <= model.DepartureTime)
+            // Custom validation is added only if basic model binding is okay
+            if (ModelState.IsValid)
             {
-                ModelState.AddModelError("ArrivalTime", "Arrival time must be later than departure time.");
+                // 1) Arrival must be after departure
+                if (model.ArrivalTime <= model.DepartureTime)
+                {
+                    ModelState.AddModelError("ArrivalTime", "Arrival time must be later than departure time.");
+                }
+
+                // 2) Origin and Destination cannot be same
+                if (!string.IsNullOrWhiteSpace(model.Origin) &&
+                    !string.IsNullOrWhiteSpace(model.Destination) &&
+                    model.Origin == model.Destination)
+                {
+                    ModelState.AddModelError("Destination", "Origin and Destination cannot be the same airport.");
+                }
+            }
+
+            // If anything failed (data annotations or our custom checks)
+            if (!ModelState.IsValid)
+            {
+                // repopulate dropdown before returning the view
+                PopulateAirports();
                 return View(model);
             }
 
-            // initialize available seats from totals
+            // Initialize available seats from total seats
             model.AvailableEconomySeats = model.EconomySeats;
             model.AvailableBusinessSeats = model.BusinessSeats;
             model.AvailableFirstClassSeats = model.FirstClassSeats;
@@ -93,7 +132,9 @@ namespace AirlineTicketingSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // EDIT GET - Admin only
+        // ========== EDIT FLIGHT (ADMIN ONLY) ==========
+
+        // GET: show form with current data
         public async Task<IActionResult> Edit(int id)
         {
             if (!IsAdmin())
@@ -101,10 +142,12 @@ namespace AirlineTicketingSystem.Controllers
 
             var flight = await _context.Flights.FindAsync(id);
             if (flight == null) return NotFound();
+
+            PopulateAirports();
             return View(flight);
         }
 
-        // EDIT POST - Admin only
+        // POST: update flight
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Flight model)
@@ -112,19 +155,35 @@ namespace AirlineTicketingSystem.Controllers
             if (!IsAdmin())
                 return RedirectToAction("Login", "Auth");
 
-            if (!ModelState.IsValid)
-                return View(model);
-
-            // VALIDATION MUST BE HERE
-            if (model.ArrivalTime <= model.DepartureTime)
+            // First, check built-in validation (Required, Range, etc.)
+            if (ModelState.IsValid)
             {
-                ModelState.AddModelError("ArrivalTime", "Arrival time must be later than departure time.");
+                // 1) Arrival > Departure
+                if (model.ArrivalTime <= model.DepartureTime)
+                {
+                    ModelState.AddModelError("ArrivalTime", "Arrival time must be later than departure time.");
+                }
+
+                // 2) Origin != Destination
+                if (!string.IsNullOrWhiteSpace(model.Origin) &&
+                    !string.IsNullOrWhiteSpace(model.Destination) &&
+                    model.Origin == model.Destination)
+                {
+                    ModelState.AddModelError("Destination", "Origin and Destination cannot be the same airport.");
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Need dropdowns again when we re-show the form
+                PopulateAirports();
                 return View(model);
             }
 
             var existing = await _context.Flights.FindAsync(model.Id);
             if (existing == null) return NotFound();
 
+            // Update basic fields
             existing.FlightNumber = model.FlightNumber.Trim();
             existing.Origin = model.Origin.Trim();
             existing.Destination = model.Destination.Trim();
@@ -133,25 +192,29 @@ namespace AirlineTicketingSystem.Controllers
             existing.DepartureTime = model.DepartureTime;
             existing.ArrivalTime = model.ArrivalTime;
 
+            // Update seat counts and keep available seats in valid range
             existing.EconomySeats = model.EconomySeats;
             existing.AvailableEconomySeats = Math.Min(existing.AvailableEconomySeats, model.EconomySeats);
+
             existing.BusinessSeats = model.BusinessSeats;
             existing.AvailableBusinessSeats = Math.Min(existing.AvailableBusinessSeats, model.BusinessSeats);
+
             existing.FirstClassSeats = model.FirstClassSeats;
             existing.AvailableFirstClassSeats = Math.Min(existing.AvailableFirstClassSeats, model.FirstClassSeats);
 
+            // Update prices and delay status
             existing.EconomyPrice = model.EconomyPrice;
             existing.BusinessPrice = model.BusinessPrice;
             existing.FirstClassPrice = model.FirstClassPrice;
-
             existing.IsDelayed = model.IsDelayed;
 
             await _context.SaveChangesAsync();
-
             return RedirectToAction(nameof(Index));
         }
 
-        // SEARCH (GET) - open to everyone
+        // ========== SEARCH FLIGHTS (PUBLIC) ==========
+
+        // Simple search by origin, destination and date
         public IActionResult Search(FlightSearchVM vm)
         {
             var query = _context.Flights.AsQueryable();
@@ -175,7 +238,9 @@ namespace AirlineTicketingSystem.Controllers
             return View(vm);
         }
 
-        // DELETE GET - Admin only
+        // ========== DELETE FLIGHT (ADMIN ONLY) ==========
+
+        // GET: confirm delete
         public async Task<IActionResult> Delete(int id)
         {
             if (!IsAdmin())
@@ -189,7 +254,7 @@ namespace AirlineTicketingSystem.Controllers
             return View(flight);
         }
 
-        // DELETE POST - Admin only
+        // POST: delete after confirmation
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -203,6 +268,7 @@ namespace AirlineTicketingSystem.Controllers
 
             if (flight == null) return NotFound();
 
+            // Do not allow deleting flights that already have bookings
             if (flight.Bookings != null && flight.Bookings.Any())
             {
                 TempData["Error"] = "Cannot delete flight that has bookings.";

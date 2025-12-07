@@ -20,17 +20,26 @@
 
         <div class="col-md-6 mb-3">
             <label asp-for="Origin"></label>
-            <input asp-for="Origin" class="form-control" />
+            <select asp-for="Origin"
+                    class="form-select"
+                    asp-items="@(ViewBag.Airports as SelectList)">
+                <option value="">-- Select Origin Airport --</option>
+            </select>
             <span asp-validation-for="Origin" class="text-danger"></span>
         </div>
 
         <div class="col-md-6 mb-3">
             <label asp-for="Destination"></label>
-            <input asp-for="Destination" class="form-control" />
+            <select asp-for="Destination"
+                    class="form-select"
+                    asp-items="@(ViewBag.Airports as SelectList)">
+                <option value="">-- Select Destination Airport --</option>
+            </select>
             <span asp-validation-for="Destination" class="text-danger"></span>
         </div>
 
-        <div class="col-md-6 mb-3">
+
+        @* <div class="col-md-6 mb-3">
             <label asp-for="FromAirport"></label>
             <input asp-for="FromAirport" class="form-control" />
         </div>
@@ -38,7 +47,7 @@
         <div class="col-md-6 mb-3">
             <label asp-for="ToAirport"></label>
             <input asp-for="ToAirport" class="form-control" />
-        </div>
+        </div> *@
 
         <div class="col-md-6 mb-3">
             <label asp-for="DepartureTime"></label>

@@ -17,20 +17,35 @@
         </div>
         <div class="col-md-6 mb-3">
             <label asp-for="Origin"></label>
-            <input asp-for="Origin" class="form-control" />
+            <select asp-for="Origin"
+                    class="form-select"
+                    asp-items="@(ViewBag.Airports as SelectList)">
+                <option value="">-- Select Origin Airport --</option>
+            </select>
+            <span asp-validation-for="Origin" class="text-danger"></span>
         </div>
+
         <div class="col-md-6 mb-3">
             <label asp-for="Destination"></label>
-            <input asp-for="Destination" class="form-control" />
+            <select asp-for="Destination"
+                    class="form-select"
+                    asp-items="@(ViewBag.Airports as SelectList)">
+                <option value="">-- Select Destination Airport --</option>
+            </select>
+            <span asp-validation-for="Destination" class="text-danger"></span>
         </div>
+
         <div class="col-md-3 mb-3">
             <label asp-for="DepartureTime"></label>
             <input asp-for="DepartureTime" type="datetime-local" class="form-control" />
+            <span asp-validation-for="DepartureTime" class="text-danger"></span>
         </div>
         <div class="col-md-3 mb-3">
             <label asp-for="ArrivalTime"></label>
             <input asp-for="ArrivalTime" type="datetime-local" class="form-control" />
+            <span asp-validation-for="ArrivalTime" class="text-danger"></span>
         </div>
+
 
         <h4>Seat Capacity</h4>
         <div class="col-md-4 mb-3">
