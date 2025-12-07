@@ -24,7 +24,12 @@
             <tr>
                 <td>@f.FlightNumber</td>
                 <td>@f.Origin → @f.Destination</td>
-                <td>@f.DepartureTime.ToString("g")</td>
+                <td>@f.DepartureTime.ToString("g")
+                @if (f.IsDelayed)
+                {
+                    <span class="badge bg-danger ms-1">Delayed</span>
+                }
+                </td>
                 <td>@f.ArrivalTime.ToString("g")</td>
                 <td>@f.EconomySeats / @f.AvailableEconomySeats</td>
                 <td>@f.BusinessSeats / @f.AvailableBusinessSeats</td>

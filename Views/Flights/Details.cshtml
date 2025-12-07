@@ -7,6 +7,18 @@
 <div class="card p-3">
     <h4>@Model.FlightNumber — @Model.Origin → @Model.Destination</h4>
     <p><strong>Departure:</strong> @Model.DepartureTime.ToString("f")</p>
+    <p>
+        <strong>Status:</strong>
+        @if (Model.IsDelayed)
+        {
+            <span class="badge bg-danger">Delayed</span>
+        }
+        else
+        {
+            <span class="badge bg-success">On Time</span>
+        }
+    </p>
+
     <p><strong>Arrival:</strong> @Model.ArrivalTime.ToString("f")</p>
     <p><strong>Duration:</strong> @Model.Duration.ToString()</p>
     <p><strong>Economy:</strong> @Model.EconomySeats total / @Model.AvailableEconomySeats available (@Model.EconomyPrice)</p>
