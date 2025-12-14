@@ -1,0 +1,687 @@
+Folder PATH listing for volume Windows-SSD
+Volume serial number is 169F-9015
+C:.
+¦   .gitattributes
+¦   .gitignore
+¦   AirlineTicketingSystem.csproj
+¦   AirlineTicketingSystem.csproj.user
+¦   AirlineTicketingSystem.sln
+¦   appsettings.Development.json
+¦   appsettings.json
+¦   Program.cs
+¦   structure.txt
+¦   
++---.github
+¦   +---workflows
++---bin
+¦   +---Debug
+¦       +---net8.0
+¦           ¦   AirlineTicketingSystem.deps.json
+¦           ¦   AirlineTicketingSystem.dll
+¦           ¦   AirlineTicketingSystem.exe
+¦           ¦   AirlineTicketingSystem.pdb
+¦           ¦   AirlineTicketingSystem.runtimeconfig.json
+¦           ¦   AirlineTicketingSystem.staticwebassets.endpoints.json
+¦           ¦   AirlineTicketingSystem.staticwebassets.runtime.json
+¦           ¦   appsettings.Development.json
+¦           ¦   appsettings.json
+¦           ¦   Azure.Core.dll
+¦           ¦   Azure.Identity.dll
+¦           ¦   BCrypt.Net-Core.dll
+¦           ¦   BouncyCastle.Cryptography.dll
+¦           ¦   dotnet-aspnet-codegenerator-design.dll
+¦           ¦   Humanizer.dll
+¦           ¦   MailKit.dll
+¦           ¦   Microsoft.AspNetCore.Authentication.JwtBearer.dll
+¦           ¦   Microsoft.AspNetCore.Razor.Language.dll
+¦           ¦   Microsoft.Bcl.AsyncInterfaces.dll
+¦           ¦   Microsoft.Build.dll
+¦           ¦   Microsoft.Build.Framework.dll
+¦           ¦   Microsoft.CodeAnalysis.AnalyzerUtilities.dll
+¦           ¦   Microsoft.CodeAnalysis.CSharp.dll
+¦           ¦   Microsoft.CodeAnalysis.CSharp.Features.dll
+¦           ¦   Microsoft.CodeAnalysis.CSharp.Workspaces.dll
+¦           ¦   Microsoft.CodeAnalysis.dll
+¦           ¦   Microsoft.CodeAnalysis.Elfie.dll
+¦           ¦   Microsoft.CodeAnalysis.Features.dll
+¦           ¦   Microsoft.CodeAnalysis.Razor.dll
+¦           ¦   Microsoft.CodeAnalysis.Scripting.dll
+¦           ¦   Microsoft.CodeAnalysis.Workspaces.dll
+¦           ¦   Microsoft.Data.SqlClient.dll
+¦           ¦   Microsoft.DiaSymReader.dll
+¦           ¦   Microsoft.DotNet.Scaffolding.Shared.dll
+¦           ¦   Microsoft.EntityFrameworkCore.Abstractions.dll
+¦           ¦   Microsoft.EntityFrameworkCore.Design.dll
+¦           ¦   Microsoft.EntityFrameworkCore.dll
+¦           ¦   Microsoft.EntityFrameworkCore.Relational.dll
+¦           ¦   Microsoft.EntityFrameworkCore.SqlServer.dll
+¦           ¦   Microsoft.Extensions.Caching.Memory.dll
+¦           ¦   Microsoft.Extensions.DependencyInjection.Abstractions.dll
+¦           ¦   Microsoft.Extensions.DependencyInjection.dll
+¦           ¦   Microsoft.Extensions.DependencyModel.dll
+¦           ¦   Microsoft.Extensions.Logging.Abstractions.dll
+¦           ¦   Microsoft.Extensions.Logging.dll
+¦           ¦   Microsoft.Extensions.Options.dll
+¦           ¦   Microsoft.Identity.Client.dll
+¦           ¦   Microsoft.Identity.Client.Extensions.Msal.dll
+¦           ¦   Microsoft.IdentityModel.Abstractions.dll
+¦           ¦   Microsoft.IdentityModel.JsonWebTokens.dll
+¦           ¦   Microsoft.IdentityModel.Logging.dll
+¦           ¦   Microsoft.IdentityModel.Protocols.dll
+¦           ¦   Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+¦           ¦   Microsoft.IdentityModel.Tokens.dll
+¦           ¦   Microsoft.NET.StringTools.dll
+¦           ¦   Microsoft.SqlServer.Server.dll
+¦           ¦   Microsoft.VisualStudio.Web.CodeGeneration.Core.dll
+¦           ¦   Microsoft.VisualStudio.Web.CodeGeneration.dll
+¦           ¦   Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore.dll
+¦           ¦   Microsoft.VisualStudio.Web.CodeGeneration.Templating.dll
+¦           ¦   Microsoft.VisualStudio.Web.CodeGeneration.Utils.dll
+¦           ¦   Microsoft.VisualStudio.Web.CodeGenerators.Mvc.dll
+¦           ¦   Microsoft.Win32.SystemEvents.dll
+¦           ¦   MimeKit.dll
+¦           ¦   Mono.TextTemplating.dll
+¦           ¦   Newtonsoft.Json.dll
+¦           ¦   NuGet.Common.dll
+¦           ¦   NuGet.Configuration.dll
+¦           ¦   NuGet.DependencyResolver.Core.dll
+¦           ¦   NuGet.Frameworks.dll
+¦           ¦   NuGet.LibraryModel.dll
+¦           ¦   NuGet.Packaging.dll
+¦           ¦   NuGet.ProjectModel.dll
+¦           ¦   NuGet.Protocol.dll
+¦           ¦   NuGet.Versioning.dll
+¦           ¦   QuestPDF.dll
+¦           ¦   System.ClientModel.dll
+¦           ¦   System.CodeDom.dll
+¦           ¦   System.Composition.AttributedModel.dll
+¦           ¦   System.Composition.Convention.dll
+¦           ¦   System.Composition.Hosting.dll
+¦           ¦   System.Composition.Runtime.dll
+¦           ¦   System.Composition.TypedParts.dll
+¦           ¦   System.Configuration.ConfigurationManager.dll
+¦           ¦   System.Drawing.Common.dll
+¦           ¦   System.IdentityModel.Tokens.Jwt.dll
+¦           ¦   System.Memory.Data.dll
+¦           ¦   System.Reflection.MetadataLoadContext.dll
+¦           ¦   System.Runtime.Caching.dll
+¦           ¦   System.Security.Cryptography.Pkcs.dll
+¦           ¦   System.Security.Cryptography.ProtectedData.dll
+¦           ¦   System.Security.Permissions.dll
+¦           ¦   System.Windows.Extensions.dll
+¦           ¦   
+¦           +---af
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---ar
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---az
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---bg
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---bn-BD
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---cs
+¦           ¦       Humanizer.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Scripting.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Workspaces.resources.dll
+¦           ¦       
+¦           +---da
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---de
+¦           ¦       Humanizer.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Scripting.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Workspaces.resources.dll
+¦           ¦       
+¦           +---el
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---es
+¦           ¦       Humanizer.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Scripting.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Workspaces.resources.dll
+¦           ¦       
+¦           +---fa
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---fi-FI
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---fr
+¦           ¦       Humanizer.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Scripting.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Workspaces.resources.dll
+¦           ¦       
+¦           +---fr-BE
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---he
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---hr
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---hu
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---hy
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---id
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---is
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---it
+¦           ¦       Humanizer.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Scripting.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Workspaces.resources.dll
+¦           ¦       
+¦           +---ja
+¦           ¦       Humanizer.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Scripting.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Workspaces.resources.dll
+¦           ¦       
+¦           +---ko
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Scripting.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Workspaces.resources.dll
+¦           ¦       
+¦           +---ko-KR
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---ku
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---LatoFont
+¦           ¦       Lato-Black.ttf
+¦           ¦       Lato-BlackItalic.ttf
+¦           ¦       Lato-Bold.ttf
+¦           ¦       Lato-BoldItalic.ttf
+¦           ¦       Lato-ExtraBold.ttf
+¦           ¦       Lato-ExtraBoldItalic.ttf
+¦           ¦       Lato-ExtraLight.ttf
+¦           ¦       Lato-ExtraLightItalic.ttf
+¦           ¦       Lato-Italic.ttf
+¦           ¦       Lato-Light.ttf
+¦           ¦       Lato-LightItalic.ttf
+¦           ¦       Lato-Medium.ttf
+¦           ¦       Lato-MediumItalic.ttf
+¦           ¦       Lato-Regular.ttf
+¦           ¦       Lato-SemiBold.ttf
+¦           ¦       Lato-SemiBoldItalic.ttf
+¦           ¦       Lato-Thin.ttf
+¦           ¦       Lato-ThinItalic.ttf
+¦           ¦       OFL.txt
+¦           ¦       
+¦           +---lv
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---ms-MY
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---mt
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---nb
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---nb-NO
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---nl
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---pl
+¦           ¦       Humanizer.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Scripting.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Workspaces.resources.dll
+¦           ¦       
+¦           +---pt
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---pt-BR
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Scripting.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Workspaces.resources.dll
+¦           ¦       
+¦           +---ro
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---ru
+¦           ¦       Humanizer.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Scripting.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Workspaces.resources.dll
+¦           ¦       
+¦           +---runtimes
+¦           ¦   +---linux-arm64
+¦           ¦   ¦   +---native
+¦           ¦   ¦           libqpdf.so
+¦           ¦   ¦           libQuestPdfSkia.so
+¦           ¦   ¦           
+¦           ¦   +---linux-musl-x64
+¦           ¦   ¦   +---native
+¦           ¦   ¦           libqpdf.so
+¦           ¦   ¦           libQuestPdfSkia.so
+¦           ¦   ¦           
+¦           ¦   +---linux-x64
+¦           ¦   ¦   +---native
+¦           ¦   ¦           libqpdf.so
+¦           ¦   ¦           libQuestPdfSkia.so
+¦           ¦   ¦           
+¦           ¦   +---osx-arm64
+¦           ¦   ¦   +---native
+¦           ¦   ¦           libqpdf.dylib
+¦           ¦   ¦           libQuestPdfSkia.dylib
+¦           ¦   ¦           
+¦           ¦   +---osx-x64
+¦           ¦   ¦   +---native
+¦           ¦   ¦           libqpdf.dylib
+¦           ¦   ¦           libQuestPdfSkia.dylib
+¦           ¦   ¦           
+¦           ¦   +---unix
+¦           ¦   ¦   +---lib
+¦           ¦   ¦       +---net6.0
+¦           ¦   ¦               Microsoft.Data.SqlClient.dll
+¦           ¦   ¦               
+¦           ¦   +---win
+¦           ¦   ¦   +---lib
+¦           ¦   ¦       +---net6.0
+¦           ¦   ¦       ¦       Microsoft.Data.SqlClient.dll
+¦           ¦   ¦       ¦       System.Runtime.Caching.dll
+¦           ¦   ¦       ¦       
+¦           ¦   ¦       +---net7.0
+¦           ¦   ¦       ¦       Microsoft.Win32.SystemEvents.dll
+¦           ¦   ¦       ¦       System.Drawing.Common.dll
+¦           ¦   ¦       ¦       System.Security.Cryptography.ProtectedData.dll
+¦           ¦   ¦       ¦       System.Windows.Extensions.dll
+¦           ¦   ¦       ¦       
+¦           ¦   ¦       +---net8.0
+¦           ¦   ¦               System.Security.Cryptography.Pkcs.dll
+¦           ¦   ¦               
+¦           ¦   +---win-arm
+¦           ¦   ¦   +---native
+¦           ¦   ¦           Microsoft.Data.SqlClient.SNI.dll
+¦           ¦   ¦           
+¦           ¦   +---win-arm64
+¦           ¦   ¦   +---native
+¦           ¦   ¦           Microsoft.Data.SqlClient.SNI.dll
+¦           ¦   ¦           
+¦           ¦   +---win-x64
+¦           ¦   ¦   +---native
+¦           ¦   ¦           libgcc_s_seh-1.dll
+¦           ¦   ¦           libstdc++-6.dll
+¦           ¦   ¦           libwinpthread-1.dll
+¦           ¦   ¦           Microsoft.Data.SqlClient.SNI.dll
+¦           ¦   ¦           qpdf.dll
+¦           ¦   ¦           QuestPdfSkia.dll
+¦           ¦   ¦           zlib1.dll
+¦           ¦   ¦           
+¦           ¦   +---win-x86
+¦           ¦       +---native
+¦           ¦               libgcc_s_dw2-1.dll
+¦           ¦               libstdc++-6.dll
+¦           ¦               libwinpthread-1.dll
+¦           ¦               Microsoft.Data.SqlClient.SNI.dll
+¦           ¦               qpdf.dll
+¦           ¦               QuestPdfSkia.dll
+¦           ¦               zlib1.dll
+¦           ¦               
+¦           +---sk
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---sl
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---sr
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---sr-Latn
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---sv
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---th-TH
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---tr
+¦           ¦       Humanizer.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Scripting.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Workspaces.resources.dll
+¦           ¦       
+¦           +---uk
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---uz-Cyrl-UZ
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---uz-Latn-UZ
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---vi
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---zh-CN
+¦           ¦       Humanizer.resources.dll
+¦           ¦       
+¦           +---zh-Hans
+¦           ¦       Humanizer.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Features.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Scripting.resources.dll
+¦           ¦       Microsoft.CodeAnalysis.Workspaces.resources.dll
+¦           ¦       
+¦           +---zh-Hant
+¦                   Humanizer.resources.dll
+¦                   Microsoft.CodeAnalysis.CSharp.Features.resources.dll
+¦                   Microsoft.CodeAnalysis.CSharp.resources.dll
+¦                   Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+¦                   Microsoft.CodeAnalysis.Features.resources.dll
+¦                   Microsoft.CodeAnalysis.resources.dll
+¦                   Microsoft.CodeAnalysis.Scripting.resources.dll
+¦                   Microsoft.CodeAnalysis.Workspaces.resources.dll
+¦                   
++---Controllers
+¦       AuthController.cs
+¦       BookingController.cs
+¦       FlightsController.cs
+¦       HomeController.cs
+¦       PassengerController.cs
+¦       ReportsController.cs
+¦       
++---Migrations
+¦       20251122115521_InitialCreate.cs
+¦       20251122115521_InitialCreate.Designer.cs
+¦       20251123085643_New.cs
+¦       20251123085643_New.Designer.cs
+¦       20251123094703_Nationality.cs
+¦       20251123094703_Nationality.Designer.cs
+¦       20251205131112_AddUsersEntity.cs
+¦       20251205131112_AddUsersEntity.Designer.cs
+¦       20251207032756_AddedAirport.cs
+¦       20251207032756_AddedAirport.Designer.cs
+¦       DatabaseContextModelSnapshot.cs
+¦       
++---Models
+¦   ¦   DatabaseContext.cs
+¦   ¦   ErrorViewModel.cs
+¦   ¦   
+¦   +---Entities
+¦   ¦       Airport.cs
+¦   ¦       Booking.cs
+¦   ¦       Flight.cs
+¦   ¦       Passenger.cs
+¦   ¦       User.cs
+¦   ¦       
+¦   +---ViewModels
+¦           BookingSummaryViewModel.cs
+¦           FlightReportRowVM.cs
+¦           FlightSearchVM.cs
+¦           RevenueSummaryVM.cs
+¦           
++---obj
+¦   ¦   AirlineTicketingSystem.csproj.nuget.dgspec.json
+¦   ¦   AirlineTicketingSystem.csproj.nuget.g.props
+¦   ¦   AirlineTicketingSystem.csproj.nuget.g.targets
+¦   ¦   project.assets.json
+¦   ¦   project.nuget.cache
+¦   ¦   
+¦   +---Debug
+¦       +---net8.0
+¦           ¦   .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+¦           ¦   AirlineT.C186FE82.Up2Date
+¦           ¦   AirlineTicketingSystem.AssemblyInfo.cs
+¦           ¦   AirlineTicketingSystem.AssemblyInfoInputs.cache
+¦           ¦   AirlineTicketingSystem.assets.cache
+¦           ¦   AirlineTicketingSystem.csproj.AssemblyReference.cache
+¦           ¦   AirlineTicketingSystem.csproj.BuildWithSkipAnalyzers
+¦           ¦   AirlineTicketingSystem.csproj.CoreCompileInputs.cache
+¦           ¦   AirlineTicketingSystem.csproj.FileListAbsolute.txt
+¦           ¦   AirlineTicketingSystem.dll
+¦           ¦   AirlineTicketingSystem.GeneratedMSBuildEditorConfig.editorconfig
+¦           ¦   AirlineTicketingSystem.genruntimeconfig.cache
+¦           ¦   AirlineTicketingSystem.GlobalUsings.g.cs
+¦           ¦   AirlineTicketingSystem.MvcApplicationPartsAssemblyInfo.cache
+¦           ¦   AirlineTicketingSystem.pdb
+¦           ¦   AirlineTicketingSystem.RazorAssemblyInfo.cache
+¦           ¦   AirlineTicketingSystem.RazorAssemblyInfo.cs
+¦           ¦   AirlineTicketingSystem.sourcelink.json
+¦           ¦   ApiEndpoints.json
+¦           ¦   apphost.exe
+¦           ¦   rjimswa.dswa.cache.json
+¦           ¦   rjsmcshtml.dswa.cache.json
+¦           ¦   rjsmrazor.dswa.cache.json
+¦           ¦   rpswa.dswa.cache.json
+¦           ¦   staticwebassets.build.endpoints.json
+¦           ¦   staticwebassets.build.json
+¦           ¦   staticwebassets.build.json.cache
+¦           ¦   staticwebassets.development.json
+¦           ¦   staticwebassets.references.upToDateCheck.txt
+¦           ¦   staticwebassets.removed.txt
+¦           ¦   staticwebassets.upToDateCheck.txt
+¦           ¦   
+¦           +---ref
+¦           ¦       AirlineTicketingSystem.dll
+¦           ¦       
+¦           +---refint
+¦           ¦       AirlineTicketingSystem.dll
+¦           ¦       
+¦           +---scopedcss
+¦           ¦   +---bundle
+¦           ¦   ¦       AirlineTicketingSystem.styles.css
+¦           ¦   ¦       
+¦           ¦   +---projectbundle
+¦           ¦   ¦       AirlineTicketingSystem.bundle.scp.css
+¦           ¦   ¦       
+¦           ¦   +---Views
+¦           ¦       +---Shared
+¦           ¦               _Layout.cshtml.rz.scp.css
+¦           ¦               
+¦           +---staticwebassets
++---Pdf
+¦       ETicketDocument.cs
+¦       
++---Properties
+¦       launchSettings.json
+¦       
++---Views
+¦   ¦   _ViewImports.cshtml
+¦   ¦   _ViewStart.cshtml
+¦   ¦   
+¦   +---Auth
+¦   ¦       Login.cshtml
+¦   ¦       Register.cshtml
+¦   ¦       
+¦   +---Booking
+¦   ¦       Create.cshtml
+¦   ¦       Delete.cshtml
+¦   ¦       Details.cshtml
+¦   ¦       Edit.cshtml
+¦   ¦       Index.cshtml
+¦   ¦       Summary.cshtml
+¦   ¦       
+¦   +---Flights
+¦   ¦       Create.cshtml
+¦   ¦       Delete.cshtml
+¦   ¦       Details.cshtml
+¦   ¦       Edit.cshtml
+¦   ¦       Index.cshtml
+¦   ¦       Search.cshtml
+¦   ¦       ViewAllWithBookings.cshtml
+¦   ¦       
+¦   +---Home
+¦   ¦       Index.cshtml
+¦   ¦       Privacy.cshtml
+¦   ¦       
+¦   +---Passenger
+¦   ¦       Create.cshtml
+¦   ¦       Delete.cshtml
+¦   ¦       Details.cshtml
+¦   ¦       Edit.cshtml
+¦   ¦       Index.cshtml
+¦   ¦       
+¦   +---Reports
+¦   ¦       BookingsPerFlight.cshtml
+¦   ¦       RevenueStatistics.cshtml
+¦   ¦       
+¦   +---Shared
+¦           Error.cshtml
+¦           _Layout.cshtml
+¦           _Layout.cshtml.css
+¦           _ValidationScriptsPartial.cshtml
+¦           
++---wwwroot
+    ¦   favicon.ico
+    ¦   
+    +---bootswatch-css
+    ¦       bootstrap.css
+    ¦       bootstrap.min.css
+    ¦       bootstrap.rtl.css
+    ¦       bootstrap.rtl.min.css
+    ¦       _bootswatch.scss
+    ¦       _variables.scss
+    ¦       
+    +---css
+    ¦       site.css
+    ¦       
+    +---js
+    ¦       site.js
+    ¦       
+    +---lib
+        +---bootstrap
+        ¦   ¦   LICENSE
+        ¦   ¦   
+        ¦   +---dist
+        ¦       +---css
+        ¦       ¦       bootstrap-grid.css
+        ¦       ¦       bootstrap-grid.css.map
+        ¦       ¦       bootstrap-grid.min.css
+        ¦       ¦       bootstrap-grid.min.css.map
+        ¦       ¦       bootstrap-grid.rtl.css
+        ¦       ¦       bootstrap-grid.rtl.css.map
+        ¦       ¦       bootstrap-grid.rtl.min.css
+        ¦       ¦       bootstrap-grid.rtl.min.css.map
+        ¦       ¦       bootstrap-reboot.css
+        ¦       ¦       bootstrap-reboot.css.map
+        ¦       ¦       bootstrap-reboot.min.css
+        ¦       ¦       bootstrap-reboot.min.css.map
+        ¦       ¦       bootstrap-reboot.rtl.css
+        ¦       ¦       bootstrap-reboot.rtl.css.map
+        ¦       ¦       bootstrap-reboot.rtl.min.css
+        ¦       ¦       bootstrap-reboot.rtl.min.css.map
+        ¦       ¦       bootstrap-utilities.css
+        ¦       ¦       bootstrap-utilities.css.map
+        ¦       ¦       bootstrap-utilities.min.css
+        ¦       ¦       bootstrap-utilities.min.css.map
+        ¦       ¦       bootstrap-utilities.rtl.css
+        ¦       ¦       bootstrap-utilities.rtl.css.map
+        ¦       ¦       bootstrap-utilities.rtl.min.css
+        ¦       ¦       bootstrap-utilities.rtl.min.css.map
+        ¦       ¦       bootstrap.css
+        ¦       ¦       bootstrap.css.map
+        ¦       ¦       bootstrap.min.css
+        ¦       ¦       bootstrap.min.css.map
+        ¦       ¦       bootstrap.rtl.css
+        ¦       ¦       bootstrap.rtl.css.map
+        ¦       ¦       bootstrap.rtl.min.css
+        ¦       ¦       bootstrap.rtl.min.css.map
+        ¦       ¦       
+        ¦       +---js
+        ¦               bootstrap.bundle.js
+        ¦               bootstrap.bundle.js.map
+        ¦               bootstrap.bundle.min.js
+        ¦               bootstrap.bundle.min.js.map
+        ¦               bootstrap.esm.js
+        ¦               bootstrap.esm.js.map
+        ¦               bootstrap.esm.min.js
+        ¦               bootstrap.esm.min.js.map
+        ¦               bootstrap.js
+        ¦               bootstrap.js.map
+        ¦               bootstrap.min.js
+        ¦               bootstrap.min.js.map
+        ¦               
+        +---jquery
+        ¦   ¦   LICENSE.txt
+        ¦   ¦   
+        ¦   +---dist
+        ¦           jquery.js
+        ¦           jquery.min.js
+        ¦           jquery.min.map
+        ¦           
+        +---jquery-validation
+        ¦   ¦   LICENSE.md
+        ¦   ¦   
+        ¦   +---dist
+        ¦           additional-methods.js
+        ¦           additional-methods.min.js
+        ¦           jquery.validate.js
+        ¦           jquery.validate.min.js
+        ¦           
+        +---jquery-validation-unobtrusive
+                jquery.validate.unobtrusive.js
+                jquery.validate.unobtrusive.min.js
+                LICENSE.txt
+                

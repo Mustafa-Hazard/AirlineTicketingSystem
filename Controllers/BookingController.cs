@@ -2,13 +2,16 @@
 using AirlineTicketingSystem.Models.Entities;
 using AirlineTicketingSystem.Models.ViewModels;
 using AirlineTicketingSystem.Pdf;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
+using System.Security.Claims;
 
 namespace AirlineTicketingSystem.Controllers
 {
+    [Authorize]
     public class BookingController : Controller
     {
         private readonly DatabaseContext _context;
@@ -18,27 +21,66 @@ namespace AirlineTicketingSystem.Controllers
             _context = context;
         }
 
-        // small helper to fill dropdown lists
+        // Helper to fill dropdown lists - NOW FILTERED BY USER
         private void PopulateDropdowns(Booking booking)
         {
             ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
-            ViewBag.PassengerId = new SelectList(_context.Passengers, "Id", "FullName", booking.PassengerId);
+
+            // SECURITY FIX: Only show passengers belonging to current user
+            var currentUserName = User.Identity.Name;
+            var userPassengers = _context.Passengers
+                .Where(p => p.UserId == currentUserName) // Assuming you add UserId to Passenger
+                .ToList();
+
+            ViewBag.PassengerId = new SelectList(userPassengers, "Id", "FullName", booking.PassengerId);
             ViewBag.SeatClass = new SelectList(Enum.GetValues(typeof(SeatClass)), booking.SeatClass);
             ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)), booking.PassengerType);
         }
 
-        // INDEX
+        // ========== INDEX (ROLE-BASED) ==========
         public async Task<IActionResult> Index()
         {
-            var bookings = await _context.Bookings
-                .Include(b => b.Flight)
-                .Include(b => b.Passenger)
-                .ToListAsync();
+            var currentUserName = User.Identity.Name;
 
-            return View(bookings);
+            if (User.IsInRole("Admin"))
+            {
+                // Admin sees ALL bookings
+                var allBookings = await _context.Bookings
+                    .Include(b => b.Flight)
+                    .Include(b => b.Passenger)
+                    .ToListAsync();
+                return View(allBookings);
+            }
+            else
+            {
+                // Customer sees ONLY THEIR bookings
+                var myBookings = await _context.Bookings
+                    .Include(b => b.Flight)
+                    .Include(b => b.Passenger)
+                    .Where(b => b.UserId == currentUserName)
+                    .OrderByDescending(b => b.BookingDate)
+                    .ToListAsync();
+                return View("MyBookings", myBookings); // Use separate view for customers
+            }
         }
 
-        // DETAILS
+        // ========== MY BOOKINGS (CUSTOMER ONLY) ==========
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> MyBookings()
+        {
+            var currentUserName = User.Identity.Name;
+
+            var myBookings = await _context.Bookings
+                .Include(b => b.Flight)
+                .Include(b => b.Passenger)
+                .Where(b => b.UserId == currentUserName)
+                .OrderByDescending(b => b.BookingDate)
+                .ToListAsync();
+
+            return View(myBookings);
+        }
+
+        // ========== DETAILS (SECURITY CHECKED) ==========
         public async Task<IActionResult> Details(int id)
         {
             var booking = await _context.Bookings
@@ -48,22 +90,38 @@ namespace AirlineTicketingSystem.Controllers
 
             if (booking == null) return NotFound();
 
+            // SECURITY CHECK: Customers can only see their own bookings
+            var currentUserName = User.Identity.Name;
+            if (User.IsInRole("Customer") && booking.UserId != currentUserName)
+            {
+                return Forbid();
+            }
+
             return View(booking);
         }
 
-        // CREATE GET
+        // ========== CREATE ==========
         public IActionResult Create()
         {
             PopulateDropdowns(new Booking());
+
+            // Show message if user has no passengers
+            var currentUserName = User.Identity.Name;
+            var hasPassengers = _context.Passengers.Any(p => p.UserId == currentUserName);
+
+            if (!hasPassengers)
+            {
+                TempData["Info"] = "You need to create a passenger first before booking.";
+            }
+
             return View();
         }
 
-        // CREATE POST
+        // ========== CREATE POST ==========
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Booking booking)
         {
-            // generate reference first so [Required] on BookingReference (if any) will pass
             booking.BookingReference = GenerateBookingReference();
 
             if (!ModelState.IsValid)
@@ -80,7 +138,25 @@ namespace AirlineTicketingSystem.Controllers
                 return View(booking);
             }
 
-            // prevent booking with past date
+            // SECURITY CHECK: Verify passenger belongs to current user
+            var currentUserName = User.Identity.Name;
+            var passenger = await _context.Passengers.FindAsync(booking.PassengerId);
+
+            if (passenger == null)
+            {
+                ModelState.AddModelError("PassengerId", "Invalid passenger selected.");
+                PopulateDropdowns(booking);
+                return View(booking);
+            }
+
+            // Only customers need this check (admins can book for anyone)
+            if (User.IsInRole("Customer") && passenger.UserId != currentUserName)
+            {
+                ModelState.AddModelError("PassengerId", "You can only book for your own passengers.");
+                PopulateDropdowns(booking);
+                return View(booking);
+            }
+
             if (booking.BookingDate < DateTime.Now)
             {
                 ModelState.AddModelError("BookingDate", "Booking date cannot be in the past.");
@@ -88,7 +164,6 @@ namespace AirlineTicketingSystem.Controllers
                 return View(booking);
             }
 
-            // prevent booking after flight departure
             if (flight.DepartureTime <= DateTime.Now)
             {
                 ModelState.AddModelError("", "This flight has already departed. Cannot book.");
@@ -115,7 +190,7 @@ namespace AirlineTicketingSystem.Controllers
 
             decimal pricePerSeat = basePrice * multiplier;
 
-            // seat availability check
+            // Seat availability check
             bool notEnough = booking.SeatClass switch
             {
                 SeatClass.Economy => booking.SeatCount > flight.AvailableEconomySeats,
@@ -131,7 +206,7 @@ namespace AirlineTicketingSystem.Controllers
                 return View(booking);
             }
 
-            // deduct seats
+            // Deduct seats
             switch (booking.SeatClass)
             {
                 case SeatClass.Economy:
@@ -146,11 +221,7 @@ namespace AirlineTicketingSystem.Controllers
             }
 
             booking.TotalPrice = pricePerSeat * booking.SeatCount;
-
-            // assign user id (simple)
-            booking.UserId = User?.Identity?.IsAuthenticated == true
-                ? (User.Identity.Name ?? "USER")
-                : "GUEST";
+            booking.UserId = currentUserName;
 
             _context.Flights.Update(flight);
             _context.Bookings.Add(booking);
@@ -164,7 +235,8 @@ namespace AirlineTicketingSystem.Controllers
             return "BR-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
         }
 
-        // EDIT GET
+        // ========== EDIT (ADMIN ONLY) ==========
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var booking = await _context.Bookings.FindAsync(id);
@@ -174,9 +246,9 @@ namespace AirlineTicketingSystem.Controllers
             return View(booking);
         }
 
-        // EDIT POST
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(Booking booking)
         {
             if (!ModelState.IsValid)
@@ -191,10 +263,8 @@ namespace AirlineTicketingSystem.Controllers
 
             if (existing == null) return NotFound();
 
-            // If class or seat count changes, adjust flight availability
             if (existing.SeatClass != booking.SeatClass || existing.SeatCount != booking.SeatCount)
             {
-                // restore previous seats on old flight
                 var flight = await _context.Flights.FindAsync(existing.FlightId);
                 if (flight == null) return BadRequest();
 
@@ -211,7 +281,6 @@ namespace AirlineTicketingSystem.Controllers
                         break;
                 }
 
-                // check new availability on same flight (or we could support changing flights too)
                 bool notEnough = booking.SeatClass switch
                 {
                     SeatClass.Economy => booking.SeatCount > flight.AvailableEconomySeats,
@@ -227,7 +296,6 @@ namespace AirlineTicketingSystem.Controllers
                     return View(booking);
                 }
 
-                // deduct new seats
                 switch (booking.SeatClass)
                 {
                     case SeatClass.Economy:
@@ -244,7 +312,6 @@ namespace AirlineTicketingSystem.Controllers
                 _context.Flights.Update(flight);
             }
 
-            // recalc price
             var selectedFlight = await _context.Flights.FindAsync(booking.FlightId);
             if (selectedFlight == null) return BadRequest();
 
@@ -266,7 +333,6 @@ namespace AirlineTicketingSystem.Controllers
 
             booking.TotalPrice = basePrice * multiplier * booking.SeatCount;
 
-            // update editable fields
             existing.FlightId = booking.FlightId;
             existing.PassengerId = booking.PassengerId;
             existing.SeatCount = booking.SeatCount;
@@ -280,7 +346,8 @@ namespace AirlineTicketingSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // DELETE GET
+        // ========== DELETE (ADMIN ONLY) ==========
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var booking = await _context.Bookings
@@ -289,13 +356,12 @@ namespace AirlineTicketingSystem.Controllers
                 .FirstOrDefaultAsync(b => b.Id == id);
 
             if (booking == null) return NotFound();
-
             return View(booking);
         }
 
-        // DELETE POST
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var booking = await _context.Bookings
@@ -304,7 +370,6 @@ namespace AirlineTicketingSystem.Controllers
 
             if (booking == null) return NotFound();
 
-            // restore seats back to flight based on class
             var flight = booking.Flight;
             if (flight != null)
             {
@@ -327,8 +392,10 @@ namespace AirlineTicketingSystem.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> MarkPaid(int id)
         {
             var booking = await _context.Bookings.FindAsync(id);
@@ -343,9 +410,7 @@ namespace AirlineTicketingSystem.Controllers
             return RedirectToAction("Summary", new { id = booking.Id });
         }
 
-
-
-        // SUMMARY
+        // ========== SUMMARY (SECURITY CHECKED) ==========
         public async Task<IActionResult> Summary(int id)
         {
             var booking = await _context.Bookings
@@ -354,6 +419,13 @@ namespace AirlineTicketingSystem.Controllers
                 .FirstOrDefaultAsync(b => b.Id == id);
 
             if (booking == null) return NotFound();
+
+            // SECURITY CHECK: Customers can only see their own booking summaries
+            var currentUserName = User.Identity.Name;
+            if (User.IsInRole("Customer") && booking.UserId != currentUserName)
+            {
+                return Forbid();
+            }
 
             var vm = new BookingSummaryViewModel
             {
@@ -376,7 +448,8 @@ namespace AirlineTicketingSystem.Controllers
 
             return View(vm);
         }
-        // E-TICKET PDF
+
+        // ========== E-TICKET PDF (SECURITY CHECKED) ==========
         [HttpGet]
         public async Task<IActionResult> ETicket(int id)
         {
@@ -385,8 +458,14 @@ namespace AirlineTicketingSystem.Controllers
                 .Include(b => b.Passenger)
                 .FirstOrDefaultAsync(b => b.Id == id);
 
-            if (booking == null)
-                return NotFound();
+            if (booking == null) return NotFound();
+
+            // SECURITY CHECK: Customers can only download their own tickets
+            var currentUserName = User.Identity.Name;
+            if (User.IsInRole("Customer") && booking.UserId != currentUserName)
+            {
+                return Forbid();
+            }
 
             var vm = new BookingSummaryViewModel
             {

@@ -32,9 +32,6 @@ namespace AirlineTicketingSystem.Models
             new Airport { Id = 8, City = "London", Name = "Heathrow", IataCode = "LHR", Country = "UK" },
             new Airport { Id = 9, City = "New York", Name = "JFK Intl", IataCode = "JFK", Country = "USA" },
             new Airport { Id = 10, City = "Doha", Name = "Hamad Intl", IataCode = "DOH", Country = "Qatar" }
-
-
-            // 👉 you can keep adding more up to 100 if you like
             );
         }
 

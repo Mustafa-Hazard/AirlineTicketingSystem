@@ -2,7 +2,220 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Hero Section -->
+<div class="hero-section text-white text-center py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; margin-bottom: 2rem;">
+    <div class="container">
+        <h1 class="display-3 fw-bold mb-3">
+            <i class="bi bi-airplane-fill"></i> Welcome to AeroNexa
+        </h1>
+        <p class="lead mb-4">Your Journey Begins Here - Book Flights with Ease</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a asp-controller="Flights" asp-action="Search" class="btn btn-light btn-lg">
+                <i class="bi bi-search"></i> Search Flights
+            </a>
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <a asp-controller="Auth" asp-action="Register" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-person-plus"></i> Sign Up
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Booking" asp-action="Create" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-ticket-perforated"></i> Book Now
+                </a>
+            }
+        </div>
+    </div>
 </div>
+
+<!-- Features Section -->
+<div class="row mb-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-lightning-charge-fill text-warning" style="font-size: 3rem;"></i>
+                </div>
+                <h4 class="card-title">Quick Booking</h4>
+                <p class="card-text text-muted">
+                    Book your flights in minutes with our streamlined booking process. Simple, fast, and secure.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-shield-check text-success" style="font-size: 3rem;"></i>
+                </div>
+                <h4 class="card-title">Secure Payments</h4>
+                <p class="card-text text-muted">
+                    Your transactions are protected with industry-standard security measures and encryption.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-ticket-detailed-fill text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h4 class="card-title">E-Tickets</h4>
+                <p class="card-text text-muted">
+                    Get instant e-tickets delivered to your email. Download and print anytime, anywhere.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Section (if user is Admin) -->
+@if (User.IsInRole("Admin"))
+{
+    <div class="alert alert-info border-0 shadow-sm mb-5">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-info-circle-fill me-3" style="font-size: 2rem;"></i>
+            <div>
+                <h5 class="alert-heading mb-1">Admin Dashboard</h5>
+                <p class="mb-0">
+                    Welcome back, Administrator!
+                    <a asp-controller="Reports" asp-action="Revenue" class="alert-link">View Reports</a> or
+                    <a asp-controller="Flights" asp-action="Create" class="alert-link">Create New Flight</a>
+                </p>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- How It Works Section -->
+<div class="card border-0 shadow-sm mb-5">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0"><i class="bi bi-info-circle"></i> How It Works</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 text-center mb-3">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3"
+                     style="width: 60px; height: 60px; font-size: 1.5rem; font-weight: bold;">
+                    1
+                </div>
+                <h5>Search Flights</h5>
+                <p class="text-muted small">Browse available flights by destination and date</p>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3"
+                     style="width: 60px; height: 60px; font-size: 1.5rem; font-weight: bold;">
+                    2
+                </div>
+                <h5>Select & Book</h5>
+                <p class="text-muted small">Choose your preferred flight and seat class</p>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3"
+                     style="width: 60px; height: 60px; font-size: 1.5rem; font-weight: bold;">
+                    3
+                </div>
+                <h5>Passenger Details</h5>
+                <p class="text-muted small">Enter passenger information and preferences</p>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3"
+                     style="width: 60px; height: 60px; font-size: 1.5rem; font-weight: bold;">
+                    4
+                </div>
+                <h5>Get E-Ticket</h5>
+                <p class="text-muted small">Receive confirmation and download your e-ticket</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links Section -->
+<div class="row mb-5">
+    <div class="col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100 bg-light">
+            <div class="card-body">
+                <h4 class="card-title">
+                    <i class="bi bi-airplane text-primary"></i> Browse Flights
+                </h4>
+                <p class="card-text text-muted">
+                    Explore all available flights and find the perfect journey for you.
+                </p>
+                <a asp-controller="Flights" asp-action="Index" class="btn btn-primary">
+                    View All Flights <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100 bg-light">
+            <div class="card-body">
+                <h4 class="card-title">
+                    <i class="bi bi-search text-success"></i> Search Flights
+                </h4>
+                <p class="card-text text-muted">
+                    Find flights by destination, date, or any criteria you need.
+                </p>
+                <a asp-controller="Flights" asp-action="Search" class="btn btn-success">
+                    Search Now <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+@if (!User.Identity.IsAuthenticated)
+{
+    <div class="text-center py-5" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 10px;">
+        <h2 class="text-white mb-3">Ready to Take Off?</h2>
+        <p class="text-white mb-4">Join AeroNexa today and start your journey!</p>
+        <a asp-controller="Auth" asp-action="Register" class="btn btn-light btn-lg me-2">
+            <i class="bi bi-person-plus"></i> Create Account
+        </a>
+        <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-light btn-lg">
+            <i class="bi bi-box-arrow-in-right"></i> Login
+        </a>
+    </div>
+}
+else
+{
+    <div class="text-center py-5 bg-light rounded">
+        <h2 class="mb-3">Welcome back, @User.Identity.Name! ✈️</h2>
+        <p class="text-muted mb-4">Ready for your next adventure?</p>
+        <a asp-controller="Booking" asp-action="Create" class="btn btn-primary btn-lg">
+            <i class="bi bi-ticket-perforated"></i> Book a Flight Now
+        </a>
+    </div>
+}
+
+<style>
+    .hero-section {
+        background-image: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><path fill="rgba(255,255,255,0.1)" d="M0 300c100-50 200-50 300 0s200 50 300 0 200-50 300 0 200 50 300 0V600H0z"/></svg>');
+        background-size: cover;
+        background-position: center;
+    }
+
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+
+    .btn {
+        transition: all 0.3s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+</style>

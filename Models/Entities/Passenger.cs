@@ -11,6 +11,9 @@ namespace AirlineTicketingSystem.Models.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
+        [Column("UserId")]
+        public string? UserId { get; set; } // Links passenger to user who created them
+
         [Required, StringLength(50)]
         [Column("First_Name")]
         [Display(Name = "First Name")]

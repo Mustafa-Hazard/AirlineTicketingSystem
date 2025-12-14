@@ -1,11 +1,12 @@
 ﻿using AirlineTicketingSystem.Models;
 using AirlineTicketingSystem.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
 
 namespace AirlineTicketingSystem.Controllers
 {
+    [Authorize(Roles = "Admin")] // Only Admin can access all actions in this controller
     public class ReportsController : Controller
     {
         private readonly DatabaseContext _context;
@@ -15,19 +16,9 @@ namespace AirlineTicketingSystem.Controllers
             _context = context;
         }
 
-        // === helpers for RBAC, same style as FlightsController ===
-        private bool IsAdmin()
-        {
-            return HttpContext.Session.GetString("UserRole") == "Admin";
-        }
-
         // ========== 1) BOOKINGS PER FLIGHT REPORT ==========
-
         public async Task<IActionResult> BookingsPerFlight()
         {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Auth");
-
             var flights = await _context.Flights
                 .Include(f => f.Bookings)
                 .ToListAsync();
@@ -54,12 +45,8 @@ namespace AirlineTicketingSystem.Controllers
         }
 
         // ========== 2) REVENUE STATISTICS REPORT ==========
-
-        public async Task<IActionResult> Revenue()
+        public async Task<IActionResult> RevenueStatistics()
         {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Auth");
-
             var bookings = await _context.Bookings
                 .Include(b => b.Flight)
                 .ToListAsync();

@@ -1,10 +1,11 @@
 ﻿using AirlineTicketingSystem.Models;
 using AirlineTicketingSystem.Models.Entities;
 using AirlineTicketingSystem.ViewModels;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AirlineTicketingSystem.Controllers
 {
@@ -15,20 +16,6 @@ namespace AirlineTicketingSystem.Controllers
         public FlightsController(DatabaseContext context)
         {
             _context = context;
-        }
-
-        // ========== AUTH / ROLE HELPERS ==========
-
-        // Simple check: is any user logged in?
-        private bool IsLoggedIn()
-        {
-            return HttpContext.Session.GetInt32("UserId") != null;
-        }
-
-        // Only Admin role can manage flights
-        private bool IsAdmin()
-        {
-            return HttpContext.Session.GetString("UserRole") == "Admin";
         }
 
         // Load airports into ViewBag for dropdowns
@@ -46,11 +33,9 @@ namespace AirlineTicketingSystem.Controllers
         // ========== ADMIN VIEW: FLIGHTS WITH BOOKINGS ==========
 
         // Admin page: each flight with its bookings (accordion style)
+        [Authorize(Roles = "Admin")]
         public IActionResult ViewAllWithBookings()
         {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Auth");
-
             var flights = _context.Flights
                 .Include(f => f.Bookings)
                     .ThenInclude(b => b.Passenger)
@@ -61,14 +46,16 @@ namespace AirlineTicketingSystem.Controllers
 
         // ========== PUBLIC PAGES: LIST + DETAILS ==========
 
-        // Everyone can see the list of flights
+        // ✅ CUSTOMERS CAN ACCESS - Everyone can see the list of flights
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             var flights = await _context.Flights.ToListAsync();
             return View(flights);
         }
 
-        // Everyone can see individual flight details
+        // ✅ CUSTOMERS CAN ACCESS - Everyone can see individual flight details
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             var flight = await _context.Flights.FindAsync(id);
@@ -78,24 +65,20 @@ namespace AirlineTicketingSystem.Controllers
 
         // ========== CREATE FLIGHT (ADMIN ONLY) ==========
 
-        // GET: show empty form
+        // ❌ ONLY ADMIN - GET: show empty form
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Auth");
-
             PopulateAirports();   // needed for Origin/Destination dropdowns
             return View();
         }
 
-        // POST: save new flight
+        // ❌ ONLY ADMIN - POST: save new flight
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Flight model)
         {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Auth");
-
             // Custom validation is added only if basic model binding is okay
             if (ModelState.IsValid)
             {
@@ -134,12 +117,10 @@ namespace AirlineTicketingSystem.Controllers
 
         // ========== EDIT FLIGHT (ADMIN ONLY) ==========
 
-        // GET: show form with current data
+        // ❌ ONLY ADMIN - GET: show form with current data
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Auth");
-
             var flight = await _context.Flights.FindAsync(id);
             if (flight == null) return NotFound();
 
@@ -147,14 +128,12 @@ namespace AirlineTicketingSystem.Controllers
             return View(flight);
         }
 
-        // POST: update flight
+        // ❌ ONLY ADMIN - POST: update flight
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(Flight model)
         {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Auth");
-
             // First, check built-in validation (Required, Range, etc.)
             if (ModelState.IsValid)
             {
@@ -214,7 +193,8 @@ namespace AirlineTicketingSystem.Controllers
 
         // ========== SEARCH FLIGHTS (PUBLIC) ==========
 
-        // Simple search by origin, destination and date
+        // ✅ CUSTOMERS CAN ACCESS - Simple search by origin, destination and date
+        [AllowAnonymous]
         public IActionResult Search(FlightSearchVM vm)
         {
             var query = _context.Flights.AsQueryable();
@@ -240,12 +220,10 @@ namespace AirlineTicketingSystem.Controllers
 
         // ========== DELETE FLIGHT (ADMIN ONLY) ==========
 
-        // GET: confirm delete
+        // ❌ ONLY ADMIN - GET: confirm delete
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Auth");
-
             var flight = await _context.Flights
                 .Include(f => f.Bookings)
                 .FirstOrDefaultAsync(f => f.Id == id);
@@ -254,14 +232,12 @@ namespace AirlineTicketingSystem.Controllers
             return View(flight);
         }
 
-        // POST: delete after confirmation
+        // ❌ ONLY ADMIN - POST: delete after confirmation
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (!IsAdmin())
-                return RedirectToAction("Login", "Auth");
-
             var flight = await _context.Flights
                 .Include(f => f.Bookings)
                 .FirstOrDefaultAsync(f => f.Id == id);

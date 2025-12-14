@@ -1,32 +1,53 @@
 using AirlineTicketingSystem.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using QuestPDF.Infrastructure;
 
-
-
-
 var builder = WebApplication.CreateBuilder(args);
-QuestPDF.Settings.License = LicenseType.Community;
 
+// Set the QuestPDF license
+QuestPDF.Settings.License = LicenseType.Community;
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Configure DatabaseContext
+// Configure the DatabaseContext with the connection string from appsettings.json
 builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+// Add JWT Authentication (replacing Cookie Authentication)
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
     {
-        options.LoginPath = "/Auth/Index";
-        options.AccessDeniedPath = "/Auth/AccessDenied";
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var token = context.Request.Cookies["jwt_token"];
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Token = token;
+                }
+                return Task.CompletedTask;
+            }
+        };
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "https://localhost:7175/",
+            ValidAudience = "https://localhost:7175/",
+            IssuerSigningKey = new SymmetricSecurityKey(
+                System.Text.Encoding.UTF32.GetBytes("class-work-5E"))
+        };
     });
+
+// Add Authorization service
 builder.Services.AddAuthorization();
-builder.Services.AddSession();
-
-
 
 var app = builder.Build();
 
@@ -34,14 +55,18 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
 }
 
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+// Use Authentication and Authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseSession();
 
+// Define the default route pattern for MVC
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

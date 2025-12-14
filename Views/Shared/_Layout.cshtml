@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
     <style>
-        /* Dark mode support */
         body.dark-mode {
             background-color: #121212;
             color: #e8e8e8;
@@ -21,7 +20,6 @@
             background-color: #222 !important;
         }
 
-        /* Toast container */
         #toast-container {
             position: fixed;
             top: 20px;
@@ -49,115 +47,129 @@
     <header>
         <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
             <div class="container-fluid">
-
                 <a class="navbar-brand fw-bold" href="@Url.Action("Index", "Home")">
                     <i class="bi bi-airplane-fill me-1"></i> AeroNexa
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#mainNavbar" aria-controls="mainNavbar"
+                        data-bs-target="#navbarColor01" aria-controls="navbarColor01"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="collapse navbar-collapse" id="mainNavbar">
+                <div class="collapse navbar-collapse" id="navbarColor01">
                     <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                Home
+                            </a>
+                        </li>
 
-                        <!-- Flights -->
+                        <!-- Flights Dropdown -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                                 <i class="bi bi-airplane"></i> Flights
                             </a>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" asp-action="Index" asp-controller="Flights">
-                                    <i class="bi bi-list-ul"></i> View All
-                                </a>
-                                <a class="dropdown-item" asp-action="Create" asp-controller="Flights">
-                                    <i class="bi bi-plus-circle"></i> Create
-                                </a>
-                                <a class="dropdown-item" asp-controller="Flights" asp-action="ViewAllWithBookings">
-                                    <i class="bi bi-diagram-3"></i> Flights with Bookings
-                                </a>
-                            </div>
-                        </li>
-                        
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">
-                                <i class="bi bi-graph-up-arrow"></i> Reports
-                            </a>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" asp-controller="Reports" asp-action="BookingsPerFlight">
-                                    Bookings per Flight
-                                </a>
-                                <a class="dropdown-item" asp-controller="Reports" asp-action="Revenue">
-                                    Revenue Statistics
-                                </a>
+                                <a class="dropdown-item" asp-action="Index" asp-controller="Flights">View All</a>
+                                <a class="dropdown-item" asp-action="Search" asp-controller="Flights">Search Flights</a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="Flights">Create Flight</a>
+                                    <a class="dropdown-item" asp-controller="Flights" asp-action="ViewAllWithBookings">Flights with Bookings</a>
+                                }
                             </div>
                         </li>
 
-
-                        <!-- Passengers -->
+                        <!-- Bookings Dropdown -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">
-                                <i class="bi bi-people-fill"></i> Passengers
-                            </a>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" asp-action="Index" asp-controller="Passenger">
-                                    <i class="bi bi-list-check"></i> View All
-                                </a>
-                                <a class="dropdown-item" asp-action="Create" asp-controller="Passenger">
-                                    <i class="bi bi-person-plus-fill"></i> Create
-                                </a>
-                            </div>
-                        </li>
-
-                        <!-- Bookings -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                                 <i class="bi bi-journal-bookmark-fill"></i> Bookings
                             </a>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" asp-controller="Booking" asp-action="Index">
-                                    <i class="bi bi-list-ul"></i> View All
-                                </a>
-                                <a class="dropdown-item" asp-controller="Booking" asp-action="Create">
-                                    <i class="bi bi-plus-circle"></i> Create
-                                </a>
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                    <a class="dropdown-item" asp-controller="Booking" asp-action="Create">Create Booking</a>
+                                }
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a class="dropdown-item" asp-controller="Booking" asp-action="Index">View All Bookings</a>
+                                }
                             </div>
                         </li>
 
+                        <!-- Passengers Dropdown (Admin Only) -->
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-people-fill"></i> Passengers
+                                </a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" asp-action="Index" asp-controller="Passenger">View All</a>
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="Passenger">Create</a>
+                                </div>
+                            </li>
+                        }
+
+                        <!-- Reports Dropdown (Admin Only) -->
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-graph-up-arrow"></i> Reports
+                                </a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" asp-controller="Reports" asp-action="BookingsPerFlight">Bookings per Flight</a>
+                                    <a class="dropdown-item" asp-controller="Reports" asp-action="Revenue">Revenue Statistics</a>
+                                </div>
+                            </li>
+                        }
                     </ul>
 
-                    <!-- Search Flights -->
-                    <form class="search-form d-flex align-items-center me-3"
-                          method="get"
-                          asp-controller="Flights"
-                          asp-action="Search">
-                        <input type="text"
-                               name="Origin"
-                               placeholder="Search flights by origin..."
-                               title="Search flights by origin" />
-                        <button type="submit" title="Search">
-                            <i class="bi bi-search"></i>
-                        </button>
+                    <!-- Search Form -->
+                    <form class="d-flex me-3" method="get" asp-controller="Flights" asp-action="Search">
+                        <input class="form-control me-sm-2" type="search" name="Origin" placeholder="Search flights...">
+                        <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
                     </form>
 
-                    <!-- Auth links (like sir) -->
+                    <!-- Auth Links -->
                     <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Auth" asp-action="Register">
-                                <i class="bi bi-person-plus"></i> Register
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Auth" asp-action="Login">
-                                <i class="bi bi-box-arrow-in-right"></i> Login
-                            </a>
-                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-person-circle"></i> @User.Identity.Name
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <div class="dropdown-header">
+                                        Role: <strong>@(User.IsInRole("Admin") ? "Admin" : "Customer")</strong>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" asp-controller="Auth" asp-action="Logout">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </a>
+                                </div>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Auth" asp-action="Register">
+                                    <i class="bi bi-person-plus"></i> Register
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Auth" asp-action="Login">
+                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                </a>
+                            </li>
+                        }
                     </ul>
 
                     <!-- Dark Mode Toggle -->
-                    <button class="btn btn-outline-light ms-3" id="toggleTheme">
+                    <button class="btn btn-outline-light ms-2" id="toggleTheme">
                         <i class="bi bi-moon-stars" id="themeIcon"></i>
                     </button>
                 </div>
@@ -166,8 +178,6 @@
     </header>
 
     <div class="container mt-4">
-
-        <!-- Breadcrumbs -->
         @if (ViewData["Breadcrumb"] != null)
         {
             <nav aria-label="breadcrumb">
@@ -192,17 +202,14 @@
         </div>
     </footer>
 
-    <!-- Toast Messages -->
     <div id="toast-container"></div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Auto Year Update
         document.getElementById("year").textContent = new Date().getFullYear();
 
-        // Dark mode toggle
         const toggleBtn = document.getElementById('toggleTheme');
         const icon = document.getElementById('themeIcon');
 
@@ -212,7 +219,6 @@
             icon.classList.toggle('bi-sun-fill');
         });
 
-        // Toast function for notifications
         function showToast(message, type = "success") {
             const toast = document.createElement("div");
             toast.className = `alert alert-${type} fade show`;
