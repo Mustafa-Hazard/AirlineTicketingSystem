@@ -42,7 +42,7 @@ builder.Services.AddAuthentication("Bearer")
             ValidIssuer = "https://localhost:7175/",
             ValidAudience = "https://localhost:7175/",
             IssuerSigningKey = new SymmetricSecurityKey(
-                System.Text.Encoding.UTF32.GetBytes("class-work-5E"))
+                System.Text.Encoding.UTF8.GetBytes("class-work-5E-your-super-secret-key-minimum-32-characters"))
         };
     });
 

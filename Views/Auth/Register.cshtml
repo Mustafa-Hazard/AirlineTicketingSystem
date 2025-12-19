@@ -1,4 +1,4 @@
-﻿@model AirlineTicketingSystem.Models.Entities.User
+﻿@model AirlineTicketingSystem.Models.ViewModels.RegisterVM
 
 @{
     ViewData["Title"] = "Register";
@@ -19,9 +19,14 @@
     </div>
 
     <div class="form-group mb-3">
-        <label asp-for="HashedPassword"></label>
-        <input asp-for="HashedPassword" type="password" class="form-control" />
-        <span asp-validation-for="HashedPassword" class="text-danger"></span>
+        <label asp-for="Password"></label>
+        <input asp-for="Password" type="password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="ConfirmPassword" class="form-label"></label>
+        <input asp-for="ConfirmPassword" class="form-control" />
+        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
     </div>
 
     <button class="btn btn-primary">Register</button>

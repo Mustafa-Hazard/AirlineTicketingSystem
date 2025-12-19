@@ -1,0 +1,381 @@
+﻿@model AirlineTicketingSystem.Models.ViewModels.AdminDashboardVM
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-4"><i class="bi bi-speedometer2"></i> Admin Dashboard</h1>
+            <p class="text-muted">Welcome back! Here's what's happening with your airline today.</p>
+        </div>
+        <div class="text-end">
+            <p class="mb-0 text-muted">Last updated:</p>
+            <strong>@DateTime.Now.ToString("MMM dd, yyyy hh:mm tt")</strong>
+        </div>
+    </div>
+
+    <!-- Today's Stats -->
+    <div class="alert alert-info border-0 shadow-sm mb-4">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <h3 class="mb-0">@Model.TodayBookings</h3>
+                <small class="text-muted">Bookings Today</small>
+            </div>
+            <div class="col-md-4">
+                <h3 class="mb-0">@Model.TodayRevenue.ToString("C")</h3>
+                <small class="text-muted">Revenue Today</small>
+            </div>
+            <div class="col-md-4">
+                <h3 class="mb-0">@Model.TodayFlights</h3>
+                <small class="text-muted">Flights Today</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Statistics Cards -->
+    <div class="row mb-4">
+        <!-- Total Flights -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Flights
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalFlights</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-airplane-fill fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Bookings -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Bookings
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalBookings</div>
+                            <small class="text-success">@Model.PaidBookings Paid</small> |
+                            <small class="text-warning">@Model.UnpaidBookings Unpaid</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-ticket-perforated-fill fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Total Revenue
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalRevenue.ToString("C")</div>
+                            <small class="text-muted">Potential: @Model.PotentialRevenue.ToString("C")</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-cash-stack fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Passengers -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total Passengers
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalPassengers</div>
+                            <small class="text-muted">@Model.TotalUsers Registered Users</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people-fill fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Popular Routes -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart-fill"></i> Top 5 Popular Routes</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.PopularRoutes.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Route</th>
+                                        <th>Bookings</th>
+                                        <th>Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var route in Model.PopularRoutes)
+                                    {
+                                        <tr>
+                                            <td><strong>@route.Route</strong></td>
+                                            <td><span class="badge bg-primary">@route.BookingCount</span></td>
+                                            <td class="text-success"><strong>@route.Revenue.ToString("C")</strong></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No booking data available yet.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Seat Class Distribution -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart-fill"></i> Seat Class Distribution</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.SeatClassStats.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Class</th>
+                                        <th>Bookings</th>
+                                        <th>Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var stat in Model.SeatClassStats)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (stat.SeatClass == "Economy")
+                                                {
+                                                    <span class="badge bg-secondary">@stat.SeatClass</span>
+                                                }
+                                                else if (stat.SeatClass == "Business")
+                                                {
+                                                    <span class="badge bg-primary">@stat.SeatClass</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">@stat.SeatClass</span>
+                                                }
+                                            </td>
+                                            <td><strong>@stat.Count</strong></td>
+                                            <td class="text-success"><strong>@stat.Revenue.ToString("C")</strong></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No seat class data available yet.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tables Row -->
+    <div class="row">
+        <!-- Recent Bookings -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Bookings</h5>
+                    <a asp-controller="Booking" asp-action="Index" class="btn btn-sm btn-light">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.RecentBookings.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Flight</th>
+                                        <th>Passenger</th>
+                                        <th>Status</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var booking in Model.RecentBookings)
+                                    {
+                                        <tr>
+                                            <td><small><strong>@booking.BookingReference</strong></small></td>
+                                            <td><small>@booking.Flight.FlightNumber</small></td>
+                                            <td><small>@booking.Passenger.FullName</small></td>
+                                            <td>
+                                                @if (booking.IsPaid)
+                                                {
+                                                    <span class="badge bg-success">Paid</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">Unpaid</span>
+                                                }
+                                            </td>
+                                            <td><small class="text-success"><strong>@booking.TotalPrice.ToString("C")</strong></small></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-3">
+                            <p class="text-muted mb-0">No recent bookings.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Flights -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Upcoming Flights</h5>
+                    <a asp-controller="Flights" asp-action="Index" class="btn btn-sm btn-light">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.UpcomingFlights.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Flight</th>
+                                        <th>Route</th>
+                                        <th>Departure</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var flight in Model.UpcomingFlights)
+                                    {
+                                        <tr>
+                                            <td><small><strong>@flight.FlightNumber</strong></small></td>
+                                            <td><small>@flight.Origin → @flight.Destination</small></td>
+                                            <td><small>@flight.DepartureTime.ToString("MMM dd, HH:mm")</small></td>
+                                            <td>
+                                                @if (flight.IsDelayed)
+                                                {
+                                                    <span class="badge bg-danger">Delayed</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">On Time</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-3">
+                            <p class="text-muted mb-0">No upcoming flights scheduled.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="bi bi-lightning-fill"></i> Quick Actions</h5>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-3 mb-3">
+                    <a asp-controller="Flights" asp-action="Create" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-plus-circle"></i><br>
+                        Create Flight
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a asp-controller="Booking" asp-action="Index" class="btn btn-success btn-lg w-100">
+                        <i class="bi bi-list-ul"></i><br>
+                        View Bookings
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a asp-controller="Reports" asp-action="Revenue" class="btn btn-info btn-lg w-100">
+                        <i class="bi bi-graph-up"></i><br>
+                        Revenue Report
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a asp-controller="Passenger" asp-action="Index" class="btn btn-warning btn-lg w-100">
+                        <i class="bi bi-people"></i><br>
+                        Manage Passengers
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-primary {
+        border-left: 4px solid #4e73df;
+    }
+    .border-left-success {
+        border-left: 4px solid #1cc88a;
+    }
+    .border-left-info {
+        border-left: 4px solid #36b9cc;
+    }
+    .border-left-warning {
+        border-left: 4px solid #f6c23e;
+    }
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>
