@@ -2,6 +2,7 @@
 using AirlineTicketingSystem.Models.Entities;
 using AirlineTicketingSystem.Models.ViewModels;
 using AirlineTicketingSystem.Pdf;
+using AirlineTicketingSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -15,10 +16,12 @@ namespace AirlineTicketingSystem.Controllers
     public class BookingController : Controller
     {
         private readonly DatabaseContext _context;
+        private readonly IEmailService _emailService;
 
-        public BookingController(DatabaseContext context)
+        public BookingController(DatabaseContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         // Helper to fill dropdown lists - NOW FILTERED BY USER
@@ -29,7 +32,7 @@ namespace AirlineTicketingSystem.Controllers
             // SECURITY FIX: Only show passengers belonging to current user
             var currentUserName = User.Identity.Name;
             var userPassengers = _context.Passengers
-                .Where(p => p.UserId == currentUserName) // Assuming you add UserId to Passenger
+                .Where(p => p.UserId == currentUserName)
                 .ToList();
 
             ViewBag.PassengerId = new SelectList(userPassengers, "Id", "FullName", booking.PassengerId);
@@ -60,7 +63,7 @@ namespace AirlineTicketingSystem.Controllers
                     .Where(b => b.UserId == currentUserName)
                     .OrderByDescending(b => b.BookingDate)
                     .ToListAsync();
-                return View("MyBookings", myBookings); // Use separate view for customers
+                return View("MyBookings", myBookings);
             }
         }
 
@@ -117,7 +120,7 @@ namespace AirlineTicketingSystem.Controllers
             return View();
         }
 
-        // ========== CREATE POST ==========
+        // ========== CREATE POST (WITH EMAIL CONFIRMATION) ==========
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Booking booking)
@@ -226,6 +229,25 @@ namespace AirlineTicketingSystem.Controllers
             _context.Flights.Update(flight);
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
+
+            // ============ EMAIL CONFIRMATION ============
+            try
+            {
+                await _emailService.SendBookingConfirmationAsync(
+                    passenger.ContactEmail,
+                    passenger.FullName,
+                    flight.FlightNumber,
+                    flight.Destination,
+                    flight.DepartureTime,
+                    booking.BookingReference,
+                    booking.TotalPrice
+                );
+                TempData["Success"] = "✅ Booking confirmed successfully! Confirmation email has been sent.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Warning"] = "⚠️ Booking confirmed but email could not be sent. Please check your email settings.";
+            }
 
             return RedirectToAction("Summary", new { id = booking.Id });
         }

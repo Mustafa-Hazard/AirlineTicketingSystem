@@ -1,6 +1,8 @@
 using AirlineTicketingSystem.Models;
-using Microsoft.EntityFrameworkCore;
+using AirlineTicketingSystem.Models.Settings;
+using AirlineTicketingSystem.Services;  // ? ADD THIS LINE
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using QuestPDF.Infrastructure;
 
@@ -48,6 +50,11 @@ builder.Services.AddAuthentication("Bearer")
 
 // Add Authorization service
 builder.Services.AddAuthorization();
+
+// ===== EMAIL SERVICE CONFIGURATION ===== 
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<IEmailService, EmailService>();  // ? ADD THIS LINE
+// ========================================
 
 var app = builder.Build();
 
