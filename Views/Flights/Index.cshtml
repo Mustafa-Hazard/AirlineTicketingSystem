@@ -1,9 +1,30 @@
 ﻿@model IEnumerable<AirlineTicketingSystem.Models.Entities.Flight>
+
 @{
     ViewData["Title"] = "Flights";
 }
+
 <h2>Flights</h2>
-<p><a asp-action="Create" class="btn btn-primary">Add Flight</a></p>
+
+@if (User.Identity!.IsAuthenticated && User.IsInRole("Admin"))
+{
+    <p class="text-muted">
+        Manage all flights in the system. You can add, edit, or delete flight records.
+    </p>
+}
+else
+{
+    <p class="text-muted">
+        Browse available flights.
+    </p>
+}
+
+@if (User.IsInRole("Admin"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Add Flight</a>
+    </p>
+}
 
 <table class="table table-striped">
     <thead>
@@ -15,7 +36,7 @@
             <th>Economy / Avail</th>
             <th>Business / Avail</th>
             <th>First / Avail</th>
-            <th></th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -24,21 +45,27 @@
             <tr>
                 <td>@f.FlightNumber</td>
                 <td>@f.Origin → @f.Destination</td>
-                <td>@f.DepartureTime.ToString("g")
-                @if (f.IsDelayed)
-                {
-                    <span class="badge bg-danger ms-1">Delayed</span>
-                }
+                <td>
+                    @f.DepartureTime.ToString("g")
+                    @if (f.IsDelayed)
+                    {
+                        <span class="badge bg-danger ms-1">Delayed</span>
+                    }
                 </td>
                 <td>@f.ArrivalTime.ToString("g")</td>
                 <td>@f.EconomySeats / @f.AvailableEconomySeats</td>
                 <td>@f.BusinessSeats / @f.AvailableBusinessSeats</td>
                 <td>@f.FirstClassSeats / @f.AvailableFirstClassSeats</td>
                 <td>
+                    <a asp-action="Details" asp-route-id="@f.Id">Details</a>
 
-                    <a asp-action="Details" asp-route-id="@f.Id">Details</a> |
-                    <a asp-action="Edit" asp-route-id="@f.Id">Edit</a> |
-                    <a asp-action="Delete" asp-route-id="@f.Id">Delete</a>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <span> | </span>
+                        <a asp-action="Edit" asp-route-id="@f.Id">Edit</a>
+                        <span> | </span>
+                        <a asp-action="Delete" asp-route-id="@f.Id">Delete</a>
+                    }
                 </td>
             </tr>
         }

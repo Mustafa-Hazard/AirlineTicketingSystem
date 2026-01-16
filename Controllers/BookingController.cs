@@ -121,141 +121,67 @@ namespace AirlineTicketingSystem.Controllers
         }
 
         // ========== CREATE POST (WITH EMAIL CONFIRMATION) ==========
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Booking booking)
+       [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Create(CreateBookingVM vm)
+{
+    if (!ModelState.IsValid)
+    {
+        vm.Flights = _context.Flights
+            .Select(f => new SelectListItem
+            {
+                Value = f.Id.ToString(),
+                Text = f.FlightNumber
+            });
+        return View(vm);
+    }
+
+    var userId = User.Identity!.Name!;
+
+    // Create Passenger
+    var passenger = new Passenger
+    {
+        First_Name = vm.Passenger.First_Name,
+        Last_Name = vm.Passenger.Last_Name,
+        PassportNumber = vm.Passenger.PassportNumber,
+        Age = vm.Passenger.Age,
+        Nationality = vm.Passenger.Nationality,
+        ContactEmail = vm.Passenger.ContactEmail,
+        PhoneNumber = vm.Passenger.PhoneNumber,
+        UserId = userId
+    };
+
+    _context.Passengers.Add(passenger);
+    await _context.SaveChangesAsync();
+
+    // Create Booking
+    var booking = new Booking
+    {
+        FlightId = vm.FlightId,
+        PassengerId = passenger.Id,
+        SeatClass = vm.SeatClass,
+        SeatCount = vm.SeatCount,
+        PassengerType = vm.PassengerType,
+        BookingDate = vm.BookingDate,
+        BookingReference = BookingHelper.GenerateBookingReference(),
+        UserId = userId
+    };
+
+    _context.Bookings.Add(booking);
+    await _context.SaveChangesAsync();
+
+    return RedirectToAction("Summary", new { id = booking.Id });
+}
+        public static class BookingHelper
         {
-            booking.BookingReference = GenerateBookingReference();
-
-            if (!ModelState.IsValid)
+            public static string GenerateBookingReference()
             {
-                PopulateDropdowns(booking);
-                return View(booking);
+                return "BR-" + Guid.NewGuid().ToString("N")
+                    .Substring(0, 8)
+                    .ToUpper();
             }
-
-            var flight = await _context.Flights.FirstOrDefaultAsync(f => f.Id == booking.FlightId);
-            if (flight == null)
-            {
-                ModelState.AddModelError("", "Selected flight not found.");
-                PopulateDropdowns(booking);
-                return View(booking);
-            }
-
-            // SECURITY CHECK: Verify passenger belongs to current user
-            var currentUserName = User.Identity.Name;
-            var passenger = await _context.Passengers.FindAsync(booking.PassengerId);
-
-            if (passenger == null)
-            {
-                ModelState.AddModelError("PassengerId", "Invalid passenger selected.");
-                PopulateDropdowns(booking);
-                return View(booking);
-            }
-
-            // Only customers need this check (admins can book for anyone)
-            if (User.IsInRole("Customer") && passenger.UserId != currentUserName)
-            {
-                ModelState.AddModelError("PassengerId", "You can only book for your own passengers.");
-                PopulateDropdowns(booking);
-                return View(booking);
-            }
-
-            if (booking.BookingDate < DateTime.Now)
-            {
-                ModelState.AddModelError("BookingDate", "Booking date cannot be in the past.");
-                PopulateDropdowns(booking);
-                return View(booking);
-            }
-
-            if (flight.DepartureTime <= DateTime.Now)
-            {
-                ModelState.AddModelError("", "This flight has already departed. Cannot book.");
-                PopulateDropdowns(booking);
-                return View(booking);
-            }
-
-            // Price calculation
-            decimal basePrice = booking.SeatClass switch
-            {
-                SeatClass.Economy => flight.EconomyPrice,
-                SeatClass.Business => flight.BusinessPrice,
-                SeatClass.FirstClass => flight.FirstClassPrice,
-                _ => flight.EconomyPrice
-            };
-
-            decimal multiplier = booking.PassengerType switch
-            {
-                PassengerType.Adult => 1.0m,
-                PassengerType.Child => 0.7m,
-                PassengerType.Infant => 0.2m,
-                _ => 1.0m
-            };
-
-            decimal pricePerSeat = basePrice * multiplier;
-
-            // Seat availability check
-            bool notEnough = booking.SeatClass switch
-            {
-                SeatClass.Economy => booking.SeatCount > flight.AvailableEconomySeats,
-                SeatClass.Business => booking.SeatCount > flight.AvailableBusinessSeats,
-                SeatClass.FirstClass => booking.SeatCount > flight.AvailableFirstClassSeats,
-                _ => true
-            };
-
-            if (notEnough)
-            {
-                ModelState.AddModelError("SeatCount", "Not enough seats available in the selected class.");
-                PopulateDropdowns(booking);
-                return View(booking);
-            }
-
-            // Deduct seats
-            switch (booking.SeatClass)
-            {
-                case SeatClass.Economy:
-                    flight.AvailableEconomySeats -= booking.SeatCount;
-                    break;
-                case SeatClass.Business:
-                    flight.AvailableBusinessSeats -= booking.SeatCount;
-                    break;
-                case SeatClass.FirstClass:
-                    flight.AvailableFirstClassSeats -= booking.SeatCount;
-                    break;
-            }
-
-            booking.TotalPrice = pricePerSeat * booking.SeatCount;
-            booking.UserId = currentUserName;
-
-            _context.Flights.Update(flight);
-            _context.Bookings.Add(booking);
-            await _context.SaveChangesAsync();
-
-            // ============ EMAIL CONFIRMATION ============
-            try
-            {
-                await _emailService.SendBookingConfirmationAsync(
-                    passenger.ContactEmail,
-                    passenger.FullName,
-                    flight.FlightNumber,
-                    flight.Destination,
-                    flight.DepartureTime,
-                    booking.BookingReference,
-                    booking.TotalPrice
-                );
-                TempData["Success"] = "✅ Booking confirmed successfully! Confirmation email has been sent.";
-            }
-            catch (Exception ex)
-            {
-                TempData["Warning"] = "⚠️ Booking confirmed but email could not be sent. Please check your email settings.";
-            }
-
-            return RedirectToAction("Summary", new { id = booking.Id });
         }
 
-        private string GenerateBookingReference()
-        {
-            return "BR-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
-        }
 
         // ========== EDIT (ADMIN ONLY) ==========
         [Authorize(Roles = "Admin")]
@@ -367,6 +293,45 @@ namespace AirlineTicketingSystem.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        [Authorize]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Flight)
+                .Include(b => b.Passenger)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (booking == null) return NotFound();
+            return View(booking);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> CancelConfirmed(int id)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Flight)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (booking == null)
+                return NotFound();
+
+            // 🔒 SAFETY CHECK
+            if (booking.Flight != null && booking.Flight.DepartureTime <= DateTime.Now)
+            {
+                TempData["Error"] = "You cannot cancel a booking after the flight has departed.";
+                return RedirectToAction(nameof(MyBookings));
+            }
+
+            _context.Bookings.Remove(booking);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Booking cancelled successfully.";
+            return RedirectToAction(nameof(MyBookings));
+        }
+
+
 
         // ========== DELETE (ADMIN ONLY) ==========
         [Authorize(Roles = "Admin")]

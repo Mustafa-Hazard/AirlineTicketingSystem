@@ -1,0 +1,95 @@
+﻿@model IEnumerable<AirlineTicketingSystem.Models.Entities.Booking>
+
+@{
+    ViewData["Title"] = "My Bookings";
+}
+
+<h2 class="mb-3">My Bookings</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        You have not made any bookings yet.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Booking Ref</th>
+                <th>Flight</th>
+                <th>Route</th>
+                <th>Departure</th>
+                <th>Seat Class</th>
+                <th>Passenger</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var booking in Model)
+            {
+                <tr>
+                    <td>@booking.BookingReference</td>
+
+                    <td>@booking.Flight?.FlightNumber</td>
+
+                    <td>
+                        @booking.Flight?.Origin → @booking.Flight?.Destination
+                    </td>
+
+                    <td>
+                        @booking.Flight?.DepartureTime.ToString("g")
+                    </td>
+
+                    <td>@booking.SeatClass</td>
+
+                    <td>
+                        @booking.Passenger?.First_Name @booking.Passenger?.Last_Name
+                    </td>
+
+                    <td>
+                        @booking.TotalPrice.ToString("C")
+                    </td>
+
+                    <td>
+                        @if (booking.IsPaid)
+                        {
+                            <span class="badge bg-success">Paid</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Unpaid</span>
+                        }
+                    </td>
+
+                    <td>
+                        <a asp-action="Details"
+                           asp-route-id="@booking.Id"
+                           class="btn btn-sm btn-outline-primary">
+                            View
+                        </a>
+
+                        @if (!booking.IsPaid && booking.Flight != null && booking.Flight.DepartureTime > DateTime.Now)
+                        {
+                            <a asp-action="Cancel"
+                               asp-route-id="@booking.Id"
+                               class="btn btn-sm btn-outline-danger ms-1">
+                                Cancel
+                            </a>
+                        }
+                        else if (booking.Flight != null && booking.Flight.DepartureTime <= DateTime.Now)
+                        {
+                            <span class="text-muted ms-2">
+                                <i class="bi bi-lock-fill"></i> Cannot cancel
+                            </span>
+                        }
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

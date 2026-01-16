@@ -1,0 +1,78 @@
+﻿@model AirlineTicketingSystem.Models.Entities.Booking
+
+@{
+    ViewData["Title"] = "Cancel Booking";
+}
+@if (Model.Flight != null && Model.Flight.DepartureTime <= DateTime.Now)
+{
+    <div class="alert alert-danger">
+        <i class="bi bi-lock-fill"></i>
+        This booking can no longer be cancelled because the flight has already departed.
+    </div>
+
+    <a asp-action="MyBookings" class="btn btn-secondary">
+        Back to My Bookings
+    </a>
+
+    return;
+}
+
+
+<h2 class="text-danger mb-3">
+    <i class="bi bi-exclamation-triangle-fill"></i> Cancel Booking
+</h2>
+
+<div class="alert alert-warning">
+    Are you sure you want to cancel this booking?
+    <strong>This action cannot be undone.</strong>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Booking Information</h5>
+
+        <p><strong>Booking Reference:</strong> @Model.BookingReference</p>
+
+        <p>
+            <strong>Passenger:</strong>
+            @Model.Passenger?.First_Name @Model.Passenger?.Last_Name
+        </p>
+
+        <p>
+            <strong>Flight:</strong>
+            @Model.Flight?.FlightNumber
+            (@Model.Flight?.Origin → @Model.Flight?.Destination)
+        </p>
+
+        <p>
+            <strong>Departure:</strong>
+            @Model.Flight?.DepartureTime.ToString("f")
+        </p>
+
+        <p><strong>Seat Class:</strong> @Model.SeatClass</p>
+
+        <p>
+            <strong>Status:</strong>
+            @if (Model.IsPaid)
+            {
+                <span class="badge bg-success">Paid</span>
+            }
+            else
+            {
+                <span class="badge bg-warning text-dark">Unpaid</span>
+            }
+        </p>
+    </div>
+</div>
+
+<form asp-action="CancelConfirmed" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <button type="submit" class="btn btn-danger">
+        <i class="bi bi-x-circle"></i> Yes, Cancel Booking
+    </button>
+
+    <a asp-action="MyBookings" class="btn btn-secondary ms-2">
+        Back
+    </a>
+</form>

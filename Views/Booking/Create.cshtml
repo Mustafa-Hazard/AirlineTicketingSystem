@@ -19,13 +19,43 @@
         <span asp-validation-for="FlightId" class="text-danger"></span>
     </div>
 
+    <h4 class="mt-4">Passenger Details</h4>
+
     <div class="col-md-6">
-        <label asp-for="PassengerId" class="form-label"></label>
-        <select asp-for="PassengerId" class="form-select" asp-items="ViewBag.PassengerId" required>
-            <option value="">-- Select Passenger --</option>
-        </select>
-        <span asp-validation-for="PassengerId" class="text-danger"></span>
+        <label asp-for="Passenger.First_Name"></label>
+        <input asp-for="Passenger.First_Name" class="form-control" />
+        <span asp-validation-for="Passenger.First_Name" class="text-danger"></span>
     </div>
+
+    <div class="col-md-6">
+        <label asp-for="Passenger.Last_Name"></label>
+        <input asp-for="Passenger.Last_Name" class="form-control" />
+        <span asp-validation-for="Passenger.Last_Name" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Passenger.PassportNumber"></label>
+        <input asp-for="Passenger.PassportNumber" class="form-control" />
+        <span asp-validation-for="Passenger.PassportNumber" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="Passenger.Age"></label>
+        <input asp-for="Passenger.Age" type="number" class="form-control" />
+        <span asp-validation-for="Passenger.Age" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Passenger.ContactEmail"></label>
+        <input asp-for="Passenger.ContactEmail" class="form-control" />
+        <span asp-validation-for="Passenger.ContactEmail" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Passenger.PhoneNumber"></label>
+        <input asp-for="Passenger.PhoneNumber" class="form-control" />
+    </div>
+
 
     <div class="col-md-6">
         <label asp-for="SeatClass" class="form-label"></label>

@@ -92,21 +92,35 @@
                         </li>
 
                         <!-- Bookings Dropdown -->
+                        @if (User.IsInRole("Admin") || User.IsInRole("Customer"))
+                        {
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                                 <i class="bi bi-journal-bookmark-fill"></i> Bookings
                             </a>
                             <div class="dropdown-menu">
-                                @if (User.Identity.IsAuthenticated)
+
+                                @if (User.Identity.IsAuthenticated && User.IsInRole("Customer"))
                                 {
-                                    <a class="dropdown-item" asp-controller="Booking" asp-action="Create">Create Booking</a>
+                                    <a class="dropdown-item" asp-controller="Booking" asp-action="Create">
+                                        <i class="bi bi-plus-circle"></i> Create Booking
+                                    </a>
+
+                                    <a class="dropdown-item" asp-controller="Booking" asp-action="MyBookings">
+                                        <i class="bi bi-journal-text"></i> My Bookings
+                                    </a>
                                 }
+
                                 @if (User.IsInRole("Admin"))
                                 {
-                                    <a class="dropdown-item" asp-controller="Booking" asp-action="Index">View All Bookings</a>
+                                    <a class="dropdown-item" asp-controller="Booking" asp-action="Index">
+                                        <i class="bi bi-list-check"></i> View All Bookings
+                                    </a>
                                 }
                             </div>
+
                         </li>
+                        }
 
                         <!-- Passengers Dropdown (Admin Only) -->
                         @if (User.IsInRole("Admin"))
@@ -131,7 +145,7 @@
                                 </a>
                                 <div class="dropdown-menu">
                                     <a class="dropdown-item" asp-controller="Reports" asp-action="BookingsPerFlight">Bookings per Flight</a>
-                                    <a class="dropdown-item" asp-controller="Reports" asp-action="Revenue">Revenue Statistics</a>
+                                    <a class="dropdown-item" asp-controller="Reports" asp-action="RevenueStatistics">Revenue Statistics</a>
                                 </div>
                             </li>
                         }
@@ -207,6 +221,7 @@
     <footer class="border-top footer text-muted mt-4">
         <div class="container">
             &copy; <span id="year"></span> - AeroNexa -
+            <a asp-controller="Home" asp-action="AboutUs">About Us</a>
             <a asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>

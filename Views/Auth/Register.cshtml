@@ -4,36 +4,73 @@
     ViewData["Title"] = "Register";
 }
 
-<h1>Register</h1>
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 85vh;">
+    <div class="card shadow border-0" style="width: 400px; border-radius: 12px;">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <h3 class="fw-bold">✈️ Join Aeronexa</h3>
+                <p class="text-muted">Register to start booking your flights.</p>
+            </div>
 
-@if (ViewBag.ErroMessage != null)
-{
-    <div class="alert alert-danger">@ViewBag.ErroMessage</div>
-}
+            <form asp-action="Register" method="post" novalidate>
+                <div class="mb-3">
+                    <label asp-for="UserName" class="form-label small fw-bold text-uppercase"></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-person-plus"></i></span>
+                        <input asp-for="UserName" class="form-control border-start-0" placeholder="Username" autocomplete="username" />
+                    </div>
+                    <span asp-validation-for="UserName" class="text-danger small"></span>
+                </div>
 
-<form asp-action="Register" method="post">
-    <div class="form-group mb-3">
-        <label asp-for="UserName"></label>
-        <input asp-for="UserName" class="form-control" />
-        <span asp-validation-for="UserName" class="text-danger"></span>
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label small fw-bold text-uppercase"></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-lock"></i></span>
+                        <input asp-for="Password" type="password" class="form-control border-start-0 border-end-0" id="regPass" placeholder="Create password" autocomplete="new-password" />
+                        <button class="btn btn-outline-light border border-start-0 text-muted" type="button" onclick="togglePassword('regPass', 'regPassIcon')">
+                            <i class="bi bi-eye-slash" id="regPassIcon"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ConfirmPassword" class="form-label small fw-bold text-uppercase"></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-check"></i></span>
+                        <input asp-for="ConfirmPassword" type="password" class="form-control border-start-0 border-end-0" id="confirmPass" placeholder="Confirm password" />
+                        <button class="btn btn-outline-light border border-start-0 text-muted" type="button" onclick="togglePassword('confirmPass', 'confirmPassIcon')">
+                            <i class="bi bi-eye-slash" id="confirmPassIcon"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 py-2 fw-bold mt-2">Register Now</button>
+            </form>
+
+            <div class="text-center mt-4">
+                <p class="small text-muted mb-0">Already have an account?</p>
+                <a asp-action="Login" class="fw-bold text-decoration-none">Login Here</a>
+            </div>
+        </div>
     </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="Password"></label>
-        <input asp-for="Password" type="password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
-    <div class="mb-3">
-        <label asp-for="ConfirmPassword" class="form-label"></label>
-        <input asp-for="ConfirmPassword" class="form-control" />
-        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-    </div>
-
-    <button class="btn btn-primary">Register</button>
-</form>
-
+</div>
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function togglePassword(inputId, iconId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleIcon = document.getElementById(iconId);
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.replace('bi-eye-slash', 'bi-eye');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.replace('bi-eye', 'bi-eye-slash');
+            }
+        }
+    </script>
 }

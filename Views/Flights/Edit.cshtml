@@ -1,80 +1,81 @@
 ﻿@model AirlineTicketingSystem.Models.Entities.Flight
+
 @{
     ViewData["Title"] = "Edit Flight";
 }
+
 <h2>Edit Flight</h2>
 
 <form asp-action="Edit" method="post">
     <input type="hidden" asp-for="Id" />
+
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
     <div class="row">
         <div class="col-md-6 mb-3">
             <label asp-for="FlightNumber"></label>
             <input asp-for="FlightNumber" class="form-control" />
+            <span asp-validation-for="FlightNumber" class="text-danger"></span>
         </div>
 
         <div class="col-md-6 mb-3">
             <label asp-for="Origin"></label>
-            <select asp-for="Origin"
-                    class="form-select"
-                    asp-items="@(ViewBag.Airports as SelectList)">
+            <select asp-for="Origin" class="form-select" asp-items="@(ViewBag.Airports as SelectList)">
                 <option value="">-- Select Origin Airport --</option>
             </select>
-            <span asp-validation-for="Origin" class="text-danger"></span>
         </div>
 
         <div class="col-md-6 mb-3">
             <label asp-for="Destination"></label>
-            <select asp-for="Destination"
-                    class="form-select"
-                    asp-items="@(ViewBag.Airports as SelectList)">
+            <select asp-for="Destination" class="form-select" asp-items="@(ViewBag.Airports as SelectList)">
                 <option value="">-- Select Destination Airport --</option>
             </select>
-            <span asp-validation-for="Destination" class="text-danger"></span>
         </div>
 
         <div class="col-md-3 mb-3">
             <label asp-for="DepartureTime"></label>
             <input asp-for="DepartureTime" type="datetime-local" class="form-control" />
-            <span asp-validation-for="DepartureTime" class="text-danger"></span>
         </div>
 
         <div class="col-md-3 mb-3">
             <label asp-for="ArrivalTime"></label>
             <input asp-for="ArrivalTime" type="datetime-local" class="form-control" />
-            <span asp-validation-for="ArrivalTime" class="text-danger"></span>
         </div>
 
         <h4>Seat Capacity</h4>
+
         <div class="col-md-4 mb-3">
             <label asp-for="EconomySeats"></label>
             <input asp-for="EconomySeats" class="form-control" />
         </div>
+
         <div class="col-md-4 mb-3">
             <label asp-for="BusinessSeats"></label>
             <input asp-for="BusinessSeats" class="form-control" />
         </div>
+
         <div class="col-md-4 mb-3">
             <label asp-for="FirstClassSeats"></label>
             <input asp-for="FirstClassSeats" class="form-control" />
         </div>
 
         <h4>Prices</h4>
+
         <div class="col-md-4 mb-3">
             <label asp-for="EconomyPrice"></label>
             <input asp-for="EconomyPrice" class="form-control" />
         </div>
+
         <div class="col-md-4 mb-3">
             <label asp-for="BusinessPrice"></label>
             <input asp-for="BusinessPrice" class="form-control" />
         </div>
+
         <div class="col-md-4 mb-3">
             <label asp-for="FirstClassPrice"></label>
             <input asp-for="FirstClassPrice" class="form-control" />
         </div>
 
-        <!-- Delay flag inside the row -->
         <div class="col-md-3 mb-3">
             <div class="form-check mt-4">
                 <input asp-for="IsDelayed" class="form-check-input" />
@@ -88,7 +89,5 @@
 </form>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <partial name="_ValidationScriptsPartial" />
 }
