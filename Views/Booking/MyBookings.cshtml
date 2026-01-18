@@ -1,95 +1,127 @@
-﻿@model IEnumerable<AirlineTicketingSystem.Models.Entities.Booking>
-
+﻿@using AirlineTicketingSystem.Models.Entities
+@model IEnumerable<Booking>
 @{
     ViewData["Title"] = "My Bookings";
 }
 
-<h2 class="mb-3">My Bookings</h2>
-
-@if (!Model.Any())
+@if (TempData["Success"] != null)
 {
-    <div class="alert alert-info">
-        You have not made any bookings yet.
-    </div>
+    <div class="alert alert-success">@TempData["Success"]</div>
 }
-else
+@if (TempData["Error"] != null)
 {
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<h2>My Bookings</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Booking Ref</th>
+            <th>Flight</th>
+            <th>Route</th>
+            <th>Departure</th>
+            <th>Passenger</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var booking in Model)
+        {
             <tr>
-                <th>Booking Ref</th>
-                <th>Flight</th>
-                <th>Route</th>
-                <th>Departure</th>
-                <th>Seat Class</th>
-                <th>Passenger</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var booking in Model)
-            {
-                <tr>
-                    <td>@booking.BookingReference</td>
+                <td>@booking.BookingReference</td>
+                <td>@booking.Flight?.FlightNumber</td>
+                <td>@booking.Flight?.Origin → @booking.Flight?.Destination</td>
+                <td>@booking.Flight?.DepartureTime</td>
+                <td>@booking.Passenger?.FullName</td>
+                <td>$@booking.TotalPrice</td>
 
-                    <td>@booking.Flight?.FlightNumber</td>
+                <td>
+                    @if (booking.IsPaid)
+                    {
+                        <span class="badge bg-success">Paid</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">Unpaid</span>
+                    }
+                </td>
 
-                    <td>
-                        @booking.Flight?.Origin → @booking.Flight?.Destination
-                    </td>
+                <td>
+                    <a asp-action="Summary" asp-route-id="@booking.Id"
+                       class="btn btn-sm btn-info">View</a>
 
-                    <td>
-                        @booking.Flight?.DepartureTime.ToString("g")
-                    </td>
-
-                    <td>@booking.SeatClass</td>
-
-                    <td>
-                        @booking.Passenger?.First_Name @booking.Passenger?.Last_Name
-                    </td>
-
-                    <td>
-                        @booking.TotalPrice.ToString("C")
-                    </td>
-
-                    <td>
-                        @if (booking.IsPaid)
+                    @* PAY OPTION *@
+                    @if (!booking.IsPaid)
+                    {
+                        if (booking.Flight != null && booking.Flight.DepartureTime > DateTime.Now)
                         {
-                            <span class="badge bg-success">Paid</span>
+                            <button class="btn btn-sm btn-success"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#paymentModal"
+                                    data-bookingid="@booking.Id">
+                                Pay
+                            </button>
                         }
                         else
                         {
-                            <span class="badge bg-warning text-dark">Unpaid</span>
+                            <span class="badge bg-secondary">Expired</span>
                         }
-                    </td>
+                    }
 
-                    <td>
-                        <a asp-action="Details"
-                           asp-route-id="@booking.Id"
-                           class="btn btn-sm btn-outline-primary">
-                            View
+                    @* CANCEL/DELETE OPTION (Customer) *@
+                    @if (booking.Flight != null && booking.Flight.DepartureTime > DateTime.Now)
+                    {
+                        <a asp-action="Cancel" asp-route-id="@booking.Id"
+                           class="btn btn-sm btn-danger">
+                            Cancel
                         </a>
+                    }
+                </td>
 
-                        @if (!booking.IsPaid && booking.Flight != null && booking.Flight.DepartureTime > DateTime.Now)
-                        {
-                            <a asp-action="Cancel"
-                               asp-route-id="@booking.Id"
-                               class="btn btn-sm btn-outline-danger ms-1">
-                                Cancel
-                            </a>
-                        }
-                        else if (booking.Flight != null && booking.Flight.DepartureTime <= DateTime.Now)
-                        {
-                            <span class="text-muted ms-2">
-                                <i class="bi bi-lock-fill"></i> Cannot cancel
-                            </span>
-                        }
+            </tr>
+        }
+    </tbody>
+</table>
 
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<div class="modal fade" id="paymentModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                Are you sure you want to confirm payment?
+            </div>
+
+            <div class="modal-footer">
+                <form method="post" asp-action="PaymentSuccess">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="bookingId" id="bookingIdInput" />
+                    <button type="submit" class="btn btn-success">
+                        Confirm
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var modal = document.getElementById('paymentModal');
+        modal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var bookingId = button.getAttribute('data-bookingid');
+            document.getElementById('bookingIdInput').value = bookingId;
+        });
+    </script>
 }

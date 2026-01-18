@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
-using System.Security.Claims;
 
 namespace AirlineTicketingSystem.Controllers
 {
@@ -24,13 +23,12 @@ namespace AirlineTicketingSystem.Controllers
             _emailService = emailService;
         }
 
-        // Helper to fill dropdown lists - NOW FILTERED BY USER
+        // ✅ Admin Edit uses this (Passengers dropdown filtered by current user)
         private void PopulateDropdowns(Booking booking)
         {
             ViewBag.FlightId = new SelectList(_context.Flights, "Id", "FlightNumber", booking.FlightId);
 
-            // SECURITY FIX: Only show passengers belonging to current user
-            var currentUserName = User.Identity.Name;
+            var currentUserName = User.Identity!.Name;
             var userPassengers = _context.Passengers
                 .Where(p => p.UserId == currentUserName)
                 .ToList();
@@ -40,38 +38,136 @@ namespace AirlineTicketingSystem.Controllers
             ViewBag.PassengerType = new SelectList(Enum.GetValues(typeof(PassengerType)), booking.PassengerType);
         }
 
-        // ========== INDEX (ROLE-BASED) ==========
-        public async Task<IActionResult> Index()
+        private async Task<List<SelectListItem>> GetFlightsDropdownAsync()
         {
-            var currentUserName = User.Identity.Name;
+            return await _context.Flights
+                .Select(f => new SelectListItem
+                {
+                    Value = f.Id.ToString(),
+                    Text = f.FlightNumber
+                })
+                .ToListAsync();
+        }
 
-            if (User.IsInRole("Admin"))
+        private static decimal GetBasePrice(Flight flight, SeatClass seatClass)
+        {
+            return seatClass switch
             {
-                // Admin sees ALL bookings
-                var allBookings = await _context.Bookings
-                    .Include(b => b.Flight)
-                    .Include(b => b.Passenger)
-                    .ToListAsync();
-                return View(allBookings);
-            }
-            else
+                SeatClass.Economy => flight.EconomyPrice,
+                SeatClass.Business => flight.BusinessPrice,
+                SeatClass.FirstClass => flight.FirstClassPrice,
+                _ => flight.EconomyPrice
+            };
+        }
+
+        private static decimal GetPassengerMultiplier(PassengerType passengerType)
+        {
+            return passengerType switch
             {
-                // Customer sees ONLY THEIR bookings
-                var myBookings = await _context.Bookings
-                    .Include(b => b.Flight)
-                    .Include(b => b.Passenger)
-                    .Where(b => b.UserId == currentUserName)
-                    .OrderByDescending(b => b.BookingDate)
-                    .ToListAsync();
-                return View("MyBookings", myBookings);
+                PassengerType.Adult => 1.0m,
+                PassengerType.Child => 0.7m,
+                PassengerType.Infant => 0.2m,
+                _ => 1.0m
+            };
+        }
+
+        private static void DeductSeats(Flight flight, SeatClass seatClass, int seatCount)
+        {
+            switch (seatClass)
+            {
+                case SeatClass.Economy: flight.AvailableEconomySeats -= seatCount; break;
+                case SeatClass.Business: flight.AvailableBusinessSeats -= seatCount; break;
+                case SeatClass.FirstClass: flight.AvailableFirstClassSeats -= seatCount; break;
             }
         }
 
-        // ========== MY BOOKINGS (CUSTOMER ONLY) ==========
+        private static void RestoreSeats(Flight flight, SeatClass seatClass, int seatCount)
+        {
+            switch (seatClass)
+            {
+                case SeatClass.Economy: flight.AvailableEconomySeats += seatCount; break;
+                case SeatClass.Business: flight.AvailableBusinessSeats += seatCount; break;
+                case SeatClass.FirstClass: flight.AvailableFirstClassSeats += seatCount; break;
+            }
+        }
+
+        private static bool HasEnoughSeats(Flight flight, SeatClass seatClass, int seatCount)
+        {
+            return seatClass switch
+            {
+                SeatClass.Economy => seatCount <= flight.AvailableEconomySeats,
+                SeatClass.Business => seatCount <= flight.AvailableBusinessSeats,
+                SeatClass.FirstClass => seatCount <= flight.AvailableFirstClassSeats,
+                _ => false
+            };
+        }
+
+        private async Task<string> GenerateUniqueBookingReferenceAsync()
+        {
+            // Keep generating until unique (simple, safe for small systems)
+            while (true)
+            {
+                var candidate = "BR-" + Guid.NewGuid().ToString("N")[..8].ToUpper();
+                bool exists = await _context.Bookings.AnyAsync(b => b.BookingReference == candidate);
+                if (!exists) return candidate;
+            }
+        }
+
+        private static BookingSummaryViewModel ToSummaryVm(Booking booking)
+        {
+            return new BookingSummaryViewModel
+            {
+                Id = booking.Id,
+                BookingReference = booking.BookingReference,
+                PassengerName = booking.Passenger?.FullName ?? "",
+                FlightNumber = booking.Flight?.FlightNumber ?? "",
+                From = booking.Flight?.Origin ?? "",
+                To = booking.Flight?.Destination ?? "",
+                DepartureTime = booking.Flight?.DepartureTime ?? DateTime.MinValue,
+                SeatCount = booking.SeatCount,
+                PricePerSeat = booking.SeatCount > 0 ? booking.TotalPrice / booking.SeatCount : booking.TotalPrice,
+                TotalPrice = booking.TotalPrice,
+                IsPaid = booking.IsPaid,
+                SeatClass = booking.SeatClass.ToString(),
+                PassengerType = booking.PassengerType.ToString()
+            };
+        }
+
+        // =========================
+        // INDEX (Admin: all, Customer: my)
+        // =========================
+        public async Task<IActionResult> Index()
+        {
+            var currentUserName = User.Identity!.Name;
+
+            if (User.IsInRole("Admin"))
+            {
+                var allBookings = await _context.Bookings
+                    .Include(b => b.Flight)
+                    .Include(b => b.Passenger)
+                    .OrderByDescending(b => b.BookingDate)
+                    .ToListAsync();
+
+                return View(allBookings);
+            }
+
+            var myBookings = await _context.Bookings
+                .Include(b => b.Flight)
+                .Include(b => b.Passenger)
+                .Where(b => b.UserId == currentUserName)
+                .OrderByDescending(b => b.BookingDate)
+                .ToListAsync();
+
+            return View("MyBookings", myBookings);
+        }
+
+        // =========================
+        // MY BOOKINGS (Customer only)
+        // =========================
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> MyBookings()
         {
-            var currentUserName = User.Identity.Name;
+            var currentUserName = User.Identity!.Name;
 
             var myBookings = await _context.Bookings
                 .Include(b => b.Flight)
@@ -83,7 +179,9 @@ namespace AirlineTicketingSystem.Controllers
             return View(myBookings);
         }
 
-        // ========== DETAILS (SECURITY CHECKED) ==========
+        // =========================
+        // DETAILS (Security checked)
+        // =========================
         public async Task<IActionResult> Details(int id)
         {
             var booking = await _context.Bookings
@@ -93,97 +191,175 @@ namespace AirlineTicketingSystem.Controllers
 
             if (booking == null) return NotFound();
 
-            // SECURITY CHECK: Customers can only see their own bookings
-            var currentUserName = User.Identity.Name;
+            var currentUserName = User.Identity!.Name;
             if (User.IsInRole("Customer") && booking.UserId != currentUserName)
-            {
                 return Forbid();
-            }
 
             return View(booking);
         }
 
-        // ========== CREATE ==========
-        public IActionResult Create()
+        // =========================
+        // CREATE (GET)
+        // =========================
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> Create()
         {
-            PopulateDropdowns(new Booking());
+            var vm = new CreateBookingVM
+            {
+                Flights = await GetFlightsDropdownAsync()
+            };
 
-            // Show message if user has no passengers
-            var currentUserName = User.Identity.Name;
-            var hasPassengers = _context.Passengers.Any(p => p.UserId == currentUserName);
+            var currentUserName = User.Identity!.Name;
+            var hasPassengers = await _context.Passengers.AnyAsync(p => p.UserId == currentUserName);
 
             if (!hasPassengers)
-            {
                 TempData["Info"] = "You need to create a passenger first before booking.";
-            }
 
-            return View();
+            return View(vm);
         }
 
-        // ========== CREATE POST (WITH EMAIL CONFIRMATION) ==========
-       [HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Create(CreateBookingVM vm)
-{
-    if (!ModelState.IsValid)
-    {
-        vm.Flights = _context.Flights
-            .Select(f => new SelectListItem
-            {
-                Value = f.Id.ToString(),
-                Text = f.FlightNumber
-            });
-        return View(vm);
-    }
-
-    var userId = User.Identity!.Name!;
-
-    // Create Passenger
-    var passenger = new Passenger
-    {
-        First_Name = vm.Passenger.First_Name,
-        Last_Name = vm.Passenger.Last_Name,
-        PassportNumber = vm.Passenger.PassportNumber,
-        Age = vm.Passenger.Age,
-        Nationality = vm.Passenger.Nationality,
-        ContactEmail = vm.Passenger.ContactEmail,
-        PhoneNumber = vm.Passenger.PhoneNumber,
-        UserId = userId
-    };
-
-    _context.Passengers.Add(passenger);
-    await _context.SaveChangesAsync();
-
-    // Create Booking
-    var booking = new Booking
-    {
-        FlightId = vm.FlightId,
-        PassengerId = passenger.Id,
-        SeatClass = vm.SeatClass,
-        SeatCount = vm.SeatCount,
-        PassengerType = vm.PassengerType,
-        BookingDate = vm.BookingDate,
-        BookingReference = BookingHelper.GenerateBookingReference(),
-        UserId = userId
-    };
-
-    _context.Bookings.Add(booking);
-    await _context.SaveChangesAsync();
-
-    return RedirectToAction("Summary", new { id = booking.Id });
-}
-        public static class BookingHelper
+        // =========================
+        // CREATE (POST)
+        // =========================
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CreateBookingVM vm)
         {
-            public static string GenerateBookingReference()
+            if (!ModelState.IsValid)
             {
-                return "BR-" + Guid.NewGuid().ToString("N")
-                    .Substring(0, 8)
-                    .ToUpper();
+                vm.Flights = await GetFlightsDropdownAsync();
+                return View(vm);
             }
+
+            var userId = User.Identity!.Name!;
+
+            // ✅ Use transaction so seats + booking consistent
+            await using var tx = await _context.Database.BeginTransactionAsync();
+
+            // Load Flight (FOR UPDATE style not available; but transaction reduces issues)
+            var flight = await _context.Flights.FirstOrDefaultAsync(f => f.Id == vm.FlightId);
+            if (flight == null)
+            {
+                await tx.RollbackAsync();
+                return NotFound("Flight details nahi milin.");
+            }
+
+            // ✅ Prevent booking on departed flights
+            if (flight.DepartureTime <= DateTime.Now)
+            {
+                ModelState.AddModelError("", "You cannot book a flight that has already departed.");
+                vm.Flights = await GetFlightsDropdownAsync();
+                await tx.RollbackAsync();
+                return View(vm);
+            }
+
+            // ✅ Seat availability check
+            if (!HasEnoughSeats(flight, vm.SeatClass, vm.SeatCount))
+            {
+                ModelState.AddModelError("SeatCount", "Not enough seats available for this flight/class.");
+                vm.Flights = await GetFlightsDropdownAsync();
+                await tx.RollbackAsync();
+                return View(vm);
+            }
+
+            // ✅ DUPLICATE BOOKING CHECK
+            // Rule: same passport + same flight => block
+            bool alreadyBooked = await _context.Bookings
+                .Include(b => b.Passenger)
+                .AnyAsync(b =>
+                    b.FlightId == vm.FlightId &&
+                    b.Passenger != null &&
+                    b.Passenger.PassportNumber == vm.Passenger.PassportNumber);
+
+            if (alreadyBooked)
+            {
+                ModelState.AddModelError("", "This passenger (same passport) is already booked on this flight.");
+                vm.Flights = await GetFlightsDropdownAsync();
+                await tx.RollbackAsync();
+                return View(vm);
+            }
+
+            // ✅ Reuse passenger if same passport already exists for this user
+            var passenger = await _context.Passengers.FirstOrDefaultAsync(p =>
+                p.UserId == userId && p.PassportNumber == vm.Passenger.PassportNumber);
+
+            if (passenger == null)
+            {
+                passenger = new Passenger
+                {
+                    First_Name = vm.Passenger.First_Name,
+                    Last_Name = vm.Passenger.Last_Name,
+                    PassportNumber = vm.Passenger.PassportNumber,
+                    Age = vm.Passenger.Age,
+                    Nationality = vm.Passenger.Nationality,
+                    ContactEmail = vm.Passenger.ContactEmail,
+                    PhoneNumber = vm.Passenger.PhoneNumber,
+                    UserId = userId
+                };
+
+                _context.Passengers.Add(passenger);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                // Optional: keep data fresh (safe + helpful)
+                passenger.First_Name = vm.Passenger.First_Name;
+                passenger.Last_Name = vm.Passenger.Last_Name;
+                passenger.Age = vm.Passenger.Age;
+                passenger.Nationality = vm.Passenger.Nationality;
+                passenger.ContactEmail = vm.Passenger.ContactEmail;
+                passenger.PhoneNumber = vm.Passenger.PhoneNumber;
+                _context.Passengers.Update(passenger);
+                await _context.SaveChangesAsync();
+            }
+
+            // ✅ Price calc
+            var basePrice = GetBasePrice(flight, vm.SeatClass);
+            var multiplier = GetPassengerMultiplier(vm.PassengerType);
+            var totalPrice = basePrice * multiplier * vm.SeatCount;
+
+            // ✅ Deduct seats
+            DeductSeats(flight, vm.SeatClass, vm.SeatCount);
+            _context.Flights.Update(flight);
+
+            // ✅ Create booking
+            var booking = new Booking
+            {
+                FlightId = vm.FlightId,
+                PassengerId = passenger.Id,
+                SeatClass = vm.SeatClass,
+                SeatCount = vm.SeatCount,
+                PassengerType = vm.PassengerType,
+                BookingDate = DateTime.Now,
+                TotalPrice = totalPrice,
+                BookingReference = await GenerateUniqueBookingReferenceAsync(),
+                UserId = userId,
+                IsPaid = false
+            };
+
+            _context.Bookings.Add(booking);
+            await _context.SaveChangesAsync();
+
+            await tx.CommitAsync();
+
+            // ✅ Email confirmation (after commit)
+            await _emailService.SendBookingConfirmationAsync(
+                passenger.ContactEmail,
+                passenger.FullName,
+                flight.FlightNumber,
+                flight.Destination,
+                flight.DepartureTime,
+                booking.BookingReference,
+                booking.TotalPrice
+            );
+
+            return RedirectToAction("Summary", new { id = booking.Id });
         }
 
-
-        // ========== EDIT (ADMIN ONLY) ==========
+        // =========================
+        // EDIT (Admin only)
+        // =========================
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
@@ -205,82 +381,64 @@ public async Task<IActionResult> Create(CreateBookingVM vm)
                 return View(booking);
             }
 
+            await using var tx = await _context.Database.BeginTransactionAsync();
+
             var existing = await _context.Bookings
                 .Include(b => b.Flight)
                 .FirstOrDefaultAsync(b => b.Id == booking.Id);
 
-            if (existing == null) return NotFound();
-
-            if (existing.SeatClass != booking.SeatClass || existing.SeatCount != booking.SeatCount)
+            if (existing == null)
             {
-                var flight = await _context.Flights.FindAsync(existing.FlightId);
-                if (flight == null) return BadRequest();
+                await tx.RollbackAsync();
+                return NotFound();
+            }
 
-                switch (existing.SeatClass)
+            // Do not allow editing to past flight time (optional safety)
+            var targetFlight = await _context.Flights.FirstOrDefaultAsync(f => f.Id == booking.FlightId);
+            if (targetFlight == null)
+            {
+                await tx.RollbackAsync();
+                return BadRequest();
+            }
+
+            // If changing seats/class/flight, restore old seats and deduct new seats
+            bool seatOrClassOrFlightChanged =
+                existing.FlightId != booking.FlightId ||
+                existing.SeatClass != booking.SeatClass ||
+                existing.SeatCount != booking.SeatCount;
+
+            if (seatOrClassOrFlightChanged)
+            {
+                // Restore seats to OLD flight
+                var oldFlight = await _context.Flights.FirstOrDefaultAsync(f => f.Id == existing.FlightId);
+                if (oldFlight == null)
                 {
-                    case SeatClass.Economy:
-                        flight.AvailableEconomySeats += existing.SeatCount;
-                        break;
-                    case SeatClass.Business:
-                        flight.AvailableBusinessSeats += existing.SeatCount;
-                        break;
-                    case SeatClass.FirstClass:
-                        flight.AvailableFirstClassSeats += existing.SeatCount;
-                        break;
+                    await tx.RollbackAsync();
+                    return BadRequest();
                 }
 
-                bool notEnough = booking.SeatClass switch
-                {
-                    SeatClass.Economy => booking.SeatCount > flight.AvailableEconomySeats,
-                    SeatClass.Business => booking.SeatCount > flight.AvailableBusinessSeats,
-                    SeatClass.FirstClass => booking.SeatCount > flight.AvailableFirstClassSeats,
-                    _ => true
-                };
+                RestoreSeats(oldFlight, existing.SeatClass, existing.SeatCount);
+                _context.Flights.Update(oldFlight);
 
-                if (notEnough)
+                // Deduct seats from NEW flight
+                if (!HasEnoughSeats(targetFlight, booking.SeatClass, booking.SeatCount))
                 {
                     ModelState.AddModelError("SeatCount", "Not enough seats available for the updated selection.");
                     PopulateDropdowns(booking);
+                    await tx.RollbackAsync();
                     return View(booking);
                 }
 
-                switch (booking.SeatClass)
-                {
-                    case SeatClass.Economy:
-                        flight.AvailableEconomySeats -= booking.SeatCount;
-                        break;
-                    case SeatClass.Business:
-                        flight.AvailableBusinessSeats -= booking.SeatCount;
-                        break;
-                    case SeatClass.FirstClass:
-                        flight.AvailableFirstClassSeats -= booking.SeatCount;
-                        break;
-                }
-
-                _context.Flights.Update(flight);
+                DeductSeats(targetFlight, booking.SeatClass, booking.SeatCount);
+                _context.Flights.Update(targetFlight);
             }
 
-            var selectedFlight = await _context.Flights.FindAsync(booking.FlightId);
-            if (selectedFlight == null) return BadRequest();
-
-            decimal basePrice = booking.SeatClass switch
-            {
-                SeatClass.Economy => selectedFlight.EconomyPrice,
-                SeatClass.Business => selectedFlight.BusinessPrice,
-                SeatClass.FirstClass => selectedFlight.FirstClassPrice,
-                _ => selectedFlight.EconomyPrice
-            };
-
-            decimal multiplier = booking.PassengerType switch
-            {
-                PassengerType.Adult => 1.0m,
-                PassengerType.Child => 0.7m,
-                PassengerType.Infant => 0.2m,
-                _ => 1.0m
-            };
-
+            // Recalculate price
+            var basePrice = GetBasePrice(targetFlight, booking.SeatClass);
+            var multiplier = GetPassengerMultiplier(booking.PassengerType);
             booking.TotalPrice = basePrice * multiplier * booking.SeatCount;
 
+            // Update fields
             existing.FlightId = booking.FlightId;
             existing.PassengerId = booking.PassengerId;
             existing.SeatCount = booking.SeatCount;
@@ -289,12 +447,18 @@ public async Task<IActionResult> Create(CreateBookingVM vm)
             existing.IsPaid = booking.IsPaid;
             existing.TotalPrice = booking.TotalPrice;
             existing.BookingDate = booking.BookingDate;
+            existing.UserId = booking.UserId;
+            existing.BookingReference = booking.BookingReference;
 
             await _context.SaveChangesAsync();
+            await tx.CommitAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize]
+        // =========================
+        // CANCEL (GET) Customer/Admin allowed with ownership checks
+        // =========================
         public async Task<IActionResult> Cancel(int id)
         {
             var booking = await _context.Bookings
@@ -303,37 +467,66 @@ public async Task<IActionResult> Create(CreateBookingVM vm)
                 .FirstOrDefaultAsync(b => b.Id == id);
 
             if (booking == null) return NotFound();
+
+            var currentUserName = User.Identity!.Name;
+            if (User.IsInRole("Customer") && booking.UserId != currentUserName)
+                return Forbid();
+
             return View(booking);
         }
 
+        // =========================
+        // CANCEL (POST)
+        // =========================
         [HttpPost]
-        [Authorize]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CancelConfirmed(int id)
         {
+            await using var tx = await _context.Database.BeginTransactionAsync();
+
             var booking = await _context.Bookings
                 .Include(b => b.Flight)
                 .FirstOrDefaultAsync(b => b.Id == id);
 
             if (booking == null)
+            {
+                await tx.RollbackAsync();
                 return NotFound();
+            }
 
-            // 🔒 SAFETY CHECK
+            var currentUserName = User.Identity!.Name;
+            if (User.IsInRole("Customer") && booking.UserId != currentUserName)
+            {
+                await tx.RollbackAsync();
+                return Forbid();
+            }
+
             if (booking.Flight != null && booking.Flight.DepartureTime <= DateTime.Now)
             {
                 TempData["Error"] = "You cannot cancel a booking after the flight has departed.";
+                await tx.RollbackAsync();
                 return RedirectToAction(nameof(MyBookings));
+            }
+
+            // Restore seats
+            if (booking.Flight != null)
+            {
+                RestoreSeats(booking.Flight, booking.SeatClass, booking.SeatCount);
+                _context.Flights.Update(booking.Flight);
             }
 
             _context.Bookings.Remove(booking);
             await _context.SaveChangesAsync();
 
+            await tx.CommitAsync();
+
             TempData["Success"] = "Booking cancelled successfully.";
             return RedirectToAction(nameof(MyBookings));
         }
 
-
-
-        // ========== DELETE (ADMIN ONLY) ==========
+        // =========================
+        // DELETE (Admin only)
+        // =========================
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -351,35 +544,53 @@ public async Task<IActionResult> Create(CreateBookingVM vm)
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            await using var tx = await _context.Database.BeginTransactionAsync();
+
             var booking = await _context.Bookings
                 .Include(b => b.Flight)
                 .FirstOrDefaultAsync(b => b.Id == id);
 
-            if (booking == null) return NotFound();
-
-            var flight = booking.Flight;
-            if (flight != null)
+            if (booking == null)
             {
-                switch (booking.SeatClass)
-                {
-                    case SeatClass.Economy:
-                        flight.AvailableEconomySeats += booking.SeatCount;
-                        break;
-                    case SeatClass.Business:
-                        flight.AvailableBusinessSeats += booking.SeatCount;
-                        break;
-                    case SeatClass.FirstClass:
-                        flight.AvailableFirstClassSeats += booking.SeatCount;
-                        break;
-                }
-                _context.Flights.Update(flight);
+                await tx.RollbackAsync();
+                return NotFound();
+            }
+
+            if (booking.Flight != null)
+            {
+                RestoreSeats(booking.Flight, booking.SeatClass, booking.SeatCount);
+                _context.Flights.Update(booking.Flight);
             }
 
             _context.Bookings.Remove(booking);
             await _context.SaveChangesAsync();
+
+            await tx.CommitAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
+        // ✅ OPTIONAL: Customer “Delete” (actually cancel) endpoint (no UI changes required)
+        // If you later add a Delete button for customer, point it here.
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> DeleteMy(int id)
+        {
+            // Reuse Cancel view (same UI file)
+            return await Cancel(id);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteMyConfirmed(int id)
+        {
+            // Reuse CancelConfirmed logic (same behaviour)
+            return await CancelConfirmed(id);
+        }
+
+        // =========================
+        // MARK PAID (Admin only)
+        // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -397,7 +608,9 @@ public async Task<IActionResult> Create(CreateBookingVM vm)
             return RedirectToAction("Summary", new { id = booking.Id });
         }
 
-        // ========== SUMMARY (SECURITY CHECKED) ==========
+        // =========================
+        // SUMMARY (Security checked)
+        // =========================
         public async Task<IActionResult> Summary(int id)
         {
             var booking = await _context.Bookings
@@ -407,36 +620,17 @@ public async Task<IActionResult> Create(CreateBookingVM vm)
 
             if (booking == null) return NotFound();
 
-            // SECURITY CHECK: Customers can only see their own booking summaries
-            var currentUserName = User.Identity.Name;
+            var currentUserName = User.Identity!.Name;
             if (User.IsInRole("Customer") && booking.UserId != currentUserName)
-            {
                 return Forbid();
-            }
 
-            var vm = new BookingSummaryViewModel
-            {
-                Id = booking.Id,
-                BookingReference = booking.BookingReference,
-                PassengerName = booking.Passenger?.FullName ?? "",
-                FlightNumber = booking.Flight?.FlightNumber ?? "",
-                From = booking.Flight?.Origin ?? "",
-                To = booking.Flight?.Destination ?? "",
-                DepartureTime = booking.Flight?.DepartureTime ?? DateTime.MinValue,
-                SeatCount = booking.SeatCount,
-                PricePerSeat = booking.SeatCount > 0
-                    ? booking.TotalPrice / booking.SeatCount
-                    : booking.TotalPrice,
-                TotalPrice = booking.TotalPrice,
-                IsPaid = booking.IsPaid,
-                SeatClass = booking.SeatClass.ToString(),
-                PassengerType = booking.PassengerType.ToString()
-            };
-
+            var vm = ToSummaryVm(booking);
             return View(vm);
         }
 
-        // ========== E-TICKET PDF (SECURITY CHECKED) ==========
+        // =========================
+        // E-TICKET PDF (Security checked)
+        // =========================
         [HttpGet]
         public async Task<IActionResult> ETicket(int id)
         {
@@ -447,37 +641,88 @@ public async Task<IActionResult> Create(CreateBookingVM vm)
 
             if (booking == null) return NotFound();
 
-            // SECURITY CHECK: Customers can only download their own tickets
-            var currentUserName = User.Identity.Name;
+            var currentUserName = User.Identity!.Name;
             if (User.IsInRole("Customer") && booking.UserId != currentUserName)
-            {
                 return Forbid();
-            }
 
-            var vm = new BookingSummaryViewModel
-            {
-                Id = booking.Id,
-                BookingReference = booking.BookingReference,
-                PassengerName = booking.Passenger?.FullName ?? "",
-                FlightNumber = booking.Flight?.FlightNumber ?? "",
-                From = booking.Flight?.Origin ?? "",
-                To = booking.Flight?.Destination ?? "",
-                DepartureTime = booking.Flight?.DepartureTime ?? DateTime.MinValue,
-                SeatCount = booking.SeatCount,
-                PricePerSeat = booking.SeatCount > 0
-                    ? booking.TotalPrice / booking.SeatCount
-                    : booking.TotalPrice,
-                TotalPrice = booking.TotalPrice,
-                IsPaid = booking.IsPaid,
-                SeatClass = booking.SeatClass.ToString(),
-                PassengerType = booking.PassengerType.ToString()
-            };
+            var vm = ToSummaryVm(booking);
 
             var document = new ETicketDocument(vm);
             var pdfBytes = document.GeneratePdf();
 
             var fileName = $"ETicket_{vm.BookingReference}.pdf";
             return File(pdfBytes, "application/pdf", fileName);
+        }
+
+        // =========================
+        // PAYMENT SUCCESS (Customer only)
+        // =========================
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PaymentSuccess(int bookingId)
+        {
+            await using var tx = await _context.Database.BeginTransactionAsync();
+
+            var booking = await _context.Bookings
+                .Include(b => b.Passenger)
+                .Include(b => b.Flight)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+
+            if (booking == null)
+            {
+                await tx.RollbackAsync();
+                return NotFound();
+            }
+
+            if (booking.UserId != User.Identity!.Name)
+            {
+                await tx.RollbackAsync();
+                return Forbid();
+            }
+
+            // Prevent payment after departure
+            if (booking.Flight != null && booking.Flight.DepartureTime <= DateTime.Now)
+            {
+                TempData["Error"] = "You cannot pay after flight departure.";
+                await tx.RollbackAsync();
+                return RedirectToAction(nameof(MyBookings));
+            }
+
+            // If already paid, just show success page (prevents double charge feeling)
+            if (booking.IsPaid)
+            {
+                await tx.RollbackAsync();
+                return View("PaymentSuccess");
+            }
+
+            booking.IsPaid = true;
+            await _context.SaveChangesAsync();
+
+            await tx.CommitAsync();
+
+            // Generate PDF for attachment
+            var vm = ToSummaryVm(booking);
+            var document = new ETicketDocument(vm);
+            var pdfBytes = document.GeneratePdf();
+            var fileName = $"ETicket_{vm.BookingReference}.pdf";
+
+            // Email + PDF attachment
+            await _emailService.SendPaymentSuccessEmailWithPdfAsync(
+                booking.Passenger!.ContactEmail,
+                booking.Passenger.FullName,
+                booking.Flight!.FlightNumber,
+                booking.Flight.Origin,
+                booking.Flight.Destination,
+                booking.Flight.DepartureTime,
+                booking.BookingReference,
+                booking.TotalPrice,
+                pdfBytes,
+                fileName
+            );
+
+            // ✅ Use your existing PaymentSuccess.cshtml view (no UI changes)
+            return View("PaymentSuccess");
         }
     }
 }

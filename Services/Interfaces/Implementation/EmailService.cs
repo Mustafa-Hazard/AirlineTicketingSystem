@@ -17,6 +17,7 @@ namespace AirlineTicketingSystem.Services
             _logger = logger;
         }
 
+        // ✅ YOUR EXISTING METHOD (UNCHANGED)
         public async Task SendBookingConfirmationAsync(string toEmail, string passengerName,
             string flightNumber, string destination, DateTime departureDate,
             string bookingReference, decimal totalAmount)
@@ -51,6 +52,88 @@ namespace AirlineTicketingSystem.Services
             }
         }
 
+        // ✅ NEW: Custom subject + custom HTML body (for any email)
+        public async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
+        {
+            try
+            {
+                var email = new MimeMessage();
+                email.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderEmail));
+                email.To.Add(MailboxAddress.Parse(toEmail));
+                email.Subject = subject;
+
+                var builder = new BodyBuilder
+                {
+                    HtmlBody = htmlBody
+                };
+
+                email.Body = builder.ToMessageBody();
+
+                using var smtp = new SmtpClient();
+                await smtp.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.SmtpPort, SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync(_emailSettings.Username, _emailSettings.Password);
+                await smtp.SendAsync(email);
+                await smtp.DisconnectAsync(true);
+
+                _logger.LogInformation($"Custom email sent to {toEmail} with subject '{subject}'");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to send custom email to {toEmail}");
+                throw new Exception($"Failed to send email: {ex.Message}");
+            }
+        }
+
+        // ✅ NEW: PAYMENT SUCCESS EMAIL (ready-made)
+        public async Task SendPaymentSuccessEmailAsync(
+            string toEmail,
+            string passengerName,
+            string flightNumber,
+            string origin,
+            string destination,
+            DateTime departureDate,
+            string bookingReference,
+            decimal totalAmount)
+        {
+            try
+            {
+                var email = new MimeMessage();
+                email.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderEmail));
+                email.To.Add(MailboxAddress.Parse(toEmail));
+
+                email.Subject = $"✅ Payment Successful - {bookingReference}";
+
+                var builder = new BodyBuilder
+                {
+                    HtmlBody = GetPaymentSuccessHtml(
+                        passengerName,
+                        flightNumber,
+                        origin,
+                        destination,
+                        departureDate,
+                        bookingReference,
+                        totalAmount
+                    )
+                };
+
+                email.Body = builder.ToMessageBody();
+
+                using var smtp = new SmtpClient();
+                await smtp.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.SmtpPort, SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync(_emailSettings.Username, _emailSettings.Password);
+                await smtp.SendAsync(email);
+                await smtp.DisconnectAsync(true);
+
+                _logger.LogInformation($"Payment success email sent to {toEmail} for booking {bookingReference}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to send payment success email to {toEmail}");
+                throw new Exception($"Failed to send payment success email: {ex.Message}");
+            }
+        }
+
+        // ✅ YOUR EXISTING HTML METHOD (UNCHANGED)
         private string GetBookingConfirmationHtml(string passengerName, string flightNumber,
             string destination, DateTime departureDate, string bookingReference, decimal totalAmount)
         {
@@ -212,22 +295,22 @@ namespace AirlineTicketingSystem.Services
             <h1>✈️ Booking Confirmed!</h1>
             <p>Your flight has been successfully booked</p>
         </div>
-        
+    
         <div class='content'>
             <p class='greeting'>Dear <strong>{passengerName}</strong>,</p>
-            
+        
             <p>Thank you for choosing our Airline Ticketing System! We're excited to have you on board.</p>
-            
+        
             <div class='booking-ref'>
                 <strong>Booking Reference: {bookingReference}</strong>
             </div>
-            
+        
             <div class='flight-route'>
                 <span class='city'>Departure</span>
                 <span class='arrow'>✈️ →</span>
                 <span class='city'>{destination}</span>
             </div>
-            
+        
             <div class='details-section'>
                 <h2>Flight Details</h2>
                 <div class='detail-row'>
@@ -251,12 +334,12 @@ namespace AirlineTicketingSystem.Services
                     <span class='detail-value'>{passengerName}</span>
                 </div>
             </div>
-            
+        
             <div class='price-section'>
                 <div class='label'>Total Amount</div>
                 <div class='amount'>${totalAmount:N2}</div>
             </div>
-            
+        
             <div class='important-notice'>
                 <h3>⚠️ Important Information</h3>
                 <ul>
@@ -266,14 +349,14 @@ namespace AirlineTicketingSystem.Services
                     <li>Baggage allowance varies by ticket class. Please check your ticket details.</li>
                 </ul>
             </div>
-            
+        
             <p style='margin-top: 30px;'>Need to make changes to your booking? Log in to your account or contact our support team.</p>
-            
+        
             <p style='color: #666; font-size: 14px; margin-top: 20px;'>
                 Keep this email for your records. You may be asked to show it at check-in.
             </p>
         </div>
-        
+    
         <div class='footer'>
             <p><strong>Airline Ticketing System</strong></p>
             <p>© {DateTime.Now.Year} All rights reserved.</p>
@@ -288,5 +371,295 @@ namespace AirlineTicketingSystem.Services
 </body>
 </html>";
         }
+
+        // ✅ NEW: PAYMENT SUCCESS HTML (same style, green theme)
+        private string GetPaymentSuccessHtml(
+            string passengerName,
+            string flightNumber,
+            string origin,
+            string destination,
+            DateTime departureDate,
+            string bookingReference,
+            decimal totalAmount)
+        {
+            return $@"
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Payment Successful</title>
+    <style>
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }}
+        .email-container {{
+            max-width: 650px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }}
+        .header {{
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }}
+        .header h1 {{
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }}
+        .header p {{
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.95;
+        }}
+        .content {{
+            padding: 30px 20px;
+        }}
+        .greeting {{
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+        }}
+        .booking-ref {{
+            background-color: #f8f9fa;
+            border-left: 4px solid #2ecc71;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 16px;
+        }}
+        .booking-ref strong {{
+            color: #27ae60;
+            font-size: 20px;
+        }}
+        .details-section {{
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }}
+        .details-section h2 {{
+            margin-top: 0;
+            color: #27ae60;
+            font-size: 20px;
+            border-bottom: 2px solid #27ae60;
+            padding-bottom: 10px;
+        }}
+        .detail-row {{
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }}
+        .detail-row:last-child {{
+            border-bottom: none;
+        }}
+        .detail-label {{
+            font-weight: 600;
+            color: #555;
+        }}
+        .detail-value {{
+            color: #333;
+            text-align: right;
+        }}
+        .route {{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 18px 0 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }}
+        .route .city {{
+            color: #27ae60;
+        }}
+        .route .arrow {{
+            margin: 0 15px;
+            color: #999;
+        }}
+        .price-section {{
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }}
+        .price-section .label {{
+            font-size: 14px;
+            opacity: 0.95;
+        }}
+        .price-section .amount {{
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+        }}
+        .success-badge {{
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 14px;
+            margin-top: 10px;
+        }}
+        .footer {{
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }}
+        .footer p {{
+            margin: 5px 0;
+        }}
+        .note {{
+            background-color: #e9f7ef;
+            border-left: 4px solid #2ecc71;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            color: #1e8449;
+        }}
+    </style>
+</head>
+<body>
+    <div class='email-container'>
+        <div class='header'>
+            <h1>✅ Payment Successful!</h1>
+            <p>Your booking payment has been completed successfully</p>
+            <div class='success-badge'>Transaction Completed</div>
+        </div>
+
+        <div class='content'>
+            <p class='greeting'>Dear <strong>{passengerName}</strong>,</p>
+
+            <p>We have received your payment successfully. Your booking is now confirmed as <strong>PAID</strong>.</p>
+
+            <div class='booking-ref'>
+                <strong>Booking Reference: {bookingReference}</strong>
+            </div>
+
+            <div class='route'>
+                <span class='city'>{origin}</span>
+                <span class='arrow'>✈️ →</span>
+                <span class='city'>{destination}</span>
+            </div>
+
+            <div class='details-section'>
+                <h2>Flight & Payment Details</h2>
+
+                <div class='detail-row'>
+                    <span class='detail-label'>Flight Number:</span>
+                    <span class='detail-value'>{flightNumber}</span>
+                </div>
+                <div class='detail-row'>
+                    <span class='detail-label'>From:</span>
+                    <span class='detail-value'>{origin}</span>
+                </div>
+                <div class='detail-row'>
+                    <span class='detail-label'>To:</span>
+                    <span class='detail-value'>{destination}</span>
+                </div>
+                <div class='detail-row'>
+                    <span class='detail-label'>Departure Date:</span>
+                    <span class='detail-value'>{departureDate:dddd, MMMM dd, yyyy}</span>
+                </div>
+                <div class='detail-row'>
+                    <span class='detail-label'>Departure Time:</span>
+                    <span class='detail-value'>{departureDate:hh:mm tt}</span>
+                </div>
+                <div class='detail-row'>
+                    <span class='detail-label'>Passenger:</span>
+                    <span class='detail-value'>{passengerName}</span>
+                </div>
+            </div>
+
+            <div class='price-section'>
+                <div class='label'>Paid Amount</div>
+                <div class='amount'>${totalAmount:N2}</div>
+            </div>
+
+            <div class='note'>
+                <strong>Note:</strong> You can download your E-ticket from your booking summary page.
+            </div>
+
+            <p style='margin-top: 25px;'>Thank you for choosing our Airline Ticketing System.</p>
+            <p><b>Airline Ticketing System Team</b></p>
+
+            <p style='color: #666; font-size: 13px; margin-top: 15px;'>
+                This is an automated email. Please do not reply.
+            </p>
+        </div>
+
+        <div class='footer'>
+            <p><strong>Airline Ticketing System</strong></p>
+            <p>© {DateTime.Now.Year} All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>";
+        }
+
+        public async Task SendPaymentSuccessEmailWithPdfAsync(
+        string toEmail,
+        string passengerName,
+        string flightNumber,
+        string origin,
+        string destination,
+        DateTime departureDate,
+        string bookingReference,
+        decimal totalAmount,
+        byte[] pdfBytes,
+        string pdfFileName)
+        {
+            try
+            {
+                var email = new MimeMessage();
+                email.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderEmail));
+                email.To.Add(MailboxAddress.Parse(toEmail));
+                email.Subject = $"✅ Payment Successful - {bookingReference}";
+
+                var builder = new BodyBuilder
+                {
+                    // ✅ reuse your existing payment success HTML
+                    HtmlBody = GetPaymentSuccessHtml(
+                        passengerName,
+                        flightNumber,
+                        origin,
+                        destination,
+                        departureDate,
+                        bookingReference,
+                        totalAmount
+                    )
+                };
+
+                // ✅ Attach PDF
+                builder.Attachments.Add(pdfFileName, pdfBytes, ContentType.Parse("application/pdf"));
+
+                email.Body = builder.ToMessageBody();
+
+                using var smtp = new SmtpClient();
+                await smtp.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.SmtpPort, SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync(_emailSettings.Username, _emailSettings.Password);
+                await smtp.SendAsync(email);
+                await smtp.DisconnectAsync(true);
+
+                _logger.LogInformation($"Payment success email (with PDF) sent to {toEmail} for booking {bookingReference}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to send payment success email (with PDF) to {toEmail}");
+                throw new Exception($"Failed to send payment success email with PDF: {ex.Message}");
+            }
+        }
     }
+
 }

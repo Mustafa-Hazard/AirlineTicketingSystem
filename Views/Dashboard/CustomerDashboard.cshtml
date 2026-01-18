@@ -95,6 +95,22 @@
                     <p class="mb-0">
                         You have <strong>@Model.PendingPayments.ToString("C")</strong> in unpaid bookings.
                         <a asp-controller="Booking" asp-action="Index" class="alert-link">View bookings</a>
+
+                        @{
+                            // ✅ FIX: choose an unpaid upcoming booking to pay
+                            var firstUnpaid = Model.RecentBookings
+                            .FirstOrDefault(b => !b.IsPaid && b.Flight.DepartureTime > DateTime.Now);
+                        }
+
+                        @if (firstUnpaid != null)
+                        {
+                            <form asp-controller="Booking" asp-action="PaymentSuccess" method="post" style="display:inline;">
+                                <input type="hidden" name="bookingId" value="@firstUnpaid.Id" />
+                                <button type="submit" class="btn btn-link p-0 align-baseline alert-link">
+                                    Pay flight
+                                </button>
+                            </form>
+                        }
                     </p>
                 </div>
             </div>

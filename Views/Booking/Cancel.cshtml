@@ -66,13 +66,13 @@
 </div>
 
 <form asp-action="CancelConfirmed" method="post">
-    <input type="hidden" asp-for="Id" />
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.Id" />
 
     <button type="submit" class="btn btn-danger">
         <i class="bi bi-x-circle"></i> Yes, Cancel Booking
     </button>
 
-    <a asp-action="MyBookings" class="btn btn-secondary ms-2">
-        Back
-    </a>
+    <a asp-action="MyBookings" class="btn btn-secondary ms-2">Back</a>
 </form>
+

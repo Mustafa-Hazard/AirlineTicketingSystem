@@ -51,18 +51,6 @@
                             }
                         </p>
                     </div>
-                    @if (!Model.IsPaid)
-                    {
-                        <div class="col-md-12 mt-3">
-                            <form asp-action="MarkPaid" method="post" class="d-inline">
-                                <input type="hidden" asp-for="Id" />
-                                <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-credit-card"></i> Mark as Paid
-                                </button>
-                            </form>
-                        </div>
-                    }
-
                 </div>
             </div>
         </div>
@@ -180,19 +168,54 @@
 </div>
 
 <div class="col-12 mt-4">
+
     <a asp-action="Index" class="btn btn-primary">
         <i class="bi bi-list"></i> View All Bookings
     </a>
+
     <a asp-action="Create" class="btn btn-success">
         <i class="bi bi-plus-circle"></i> Create Another Booking
     </a>
+
     <button onclick="window.print()" class="btn btn-secondary">
         <i class="bi bi-printer"></i> Print
     </button>
-    <a asp-action="ETicket" asp-route-id="@Model.Id" class="btn btn-outline-danger">
-        <i class="bi bi-file-earmark-pdf"></i> Download E-Ticket (PDF)
-    </a>
+
+    @* ✅ DOWNLOAD PDF ONLY IF PAID *@
+    @if (Model.IsPaid)
+    {
+        <a asp-action="ETicket"
+           asp-route-id="@Model.Id"
+           class="btn btn-outline-danger">
+            <i class="bi bi-file-earmark-pdf"></i> Download E-Ticket (PDF)
+        </a>
+    }
+
+    @* ✅ PAY BUTTON (Customer + Unpaid + Future Flight) *@
+    @if (!Model.IsPaid && Model.DepartureTime > DateTime.Now)
+    {
+        <form asp-action="PaymentSuccess"
+              method="post"
+              class="d-inline">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="bookingId" value="@Model.Id" />
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-credit-card"></i> Pay Now
+            </button>
+        </form>
+    }
+
+    @* ✅ CANCEL / DELETE (Customer + Future Flight) *@
+    @if (Model.DepartureTime > DateTime.Now)
+    {
+        <a asp-action="Cancel"
+           asp-route-id="@Model.Id"
+           class="btn btn-danger">
+            <i class="bi bi-x-circle"></i> Cancel Booking
+        </a>
+    }
 </div>
+
 
 @section Scripts {
     <script>

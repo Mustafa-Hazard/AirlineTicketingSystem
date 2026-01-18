@@ -1,10 +1,17 @@
-﻿@model AirlineTicketingSystem.Models.Entities.Booking
+﻿@using AirlineTicketingSystem.Models.Entities
+@model CreateBookingVM
+
 @{
     ViewData["Title"] = "Create Booking";
 }
 
 <h2>Create Booking</h2>
 <hr />
+
+@if (TempData["Info"] != null)
+{
+    <div class="alert alert-info">@TempData["Info"]</div>
+}
 
 <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
@@ -13,7 +20,7 @@
 
     <div class="col-md-6">
         <label asp-for="FlightId" class="form-label"></label>
-        <select asp-for="FlightId" class="form-select" asp-items="ViewBag.FlightId" required>
+        <select asp-for="FlightId" class="form-select" asp-items="Model.Flights" required>
             <option value="">-- Select Flight --</option>
         </select>
         <span asp-validation-for="FlightId" class="text-danger"></span>
@@ -54,37 +61,32 @@
     <div class="col-md-6">
         <label asp-for="Passenger.PhoneNumber"></label>
         <input asp-for="Passenger.PhoneNumber" class="form-control" />
+        <span asp-validation-for="Passenger.PhoneNumber" class="text-danger"></span>
     </div>
-
 
     <div class="col-md-6">
         <label asp-for="SeatClass" class="form-label"></label>
-        <select asp-for="SeatClass" class="form-select" asp-items="ViewBag.SeatClass" required></select>
+        <select asp-for="SeatClass" class="form-select"
+                asp-items="Html.GetEnumSelectList<SeatClass>()" required></select>
         <span asp-validation-for="SeatClass" class="text-danger"></span>
     </div>
 
     <div class="col-md-6">
         <label asp-for="PassengerType" class="form-label"></label>
-        <select asp-for="PassengerType" class="form-select" asp-items="ViewBag.PassengerType" required></select>
+        <select asp-for="PassengerType" class="form-select"
+                asp-items="Html.GetEnumSelectList<PassengerType>()" required></select>
         <span asp-validation-for="PassengerType" class="text-danger"></span>
     </div>
 
     <div class="col-md-4">
         <label asp-for="SeatCount" class="form-label"></label>
         <input asp-for="SeatCount" type="number" min="1" max="10" value="1" class="form-control" required />
-        <span asp-validation-for="SeatCount" class="text-danger"></span>
+        <span asp-validation-for="SeatCount"
+              class="text-danger"></span>
     </div>
 
-    <div class="col-md-6">
-        <label asp-for="BookingDate" class="form-label"></label>
-        <input asp-for="BookingDate" type="datetime-local" class="form-control" required />
-        <span asp-validation-for="BookingDate" class="text-danger"></span>
-    </div>
-
-    <div class="col-md-6 form-check mt-4">
-        <input asp-for="IsPaid" type="checkbox" class="form-check-input" />
-        <label asp-for="IsPaid" class="form-check-label"></label>
-    </div>
+    <!-- Recommended: Do NOT allow customer to set IsPaid / BookingDate -->
+    <!-- Controller sets BookingDate=DateTime.Now and IsPaid=false -->
 
     <div class="col-12">
         <button type="submit" class="btn btn-primary">Create Booking</button>
