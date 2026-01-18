@@ -26,3 +26,23 @@
 <div>
     <a class="btn btn-secondary mt-3" asp-action="Index">Back to Flight List</a>
 </div>
+<form method="post" asp-action="Delay" asp-route-id="@Model.Id">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label class="form-label">New Departure Time</label>
+        <input type="datetime-local" class="form-control" name="newDepartureTime" required
+               id="delayPicker" />
+
+        <span class="text-danger">@Html.ValidationMessage("newDepartureTime")</span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update Delay</button>
+</form>
+@section Scripts {
+    <script>
+        // Calendar mein minimum date set karna
+        var currentDeparture = "@Model.DepartureTime.ToString("yyyy-MM-ddTHH:mm")";
+        document.getElementById("delayPicker").setAttribute("min", currentDeparture);
+    </script>
+}

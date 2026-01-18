@@ -166,22 +166,45 @@ namespace AirlineTicketingSystem.Controllers
             PopulateAirports();
             return View(model);
         }
-
-        // Admin - Delay Flight (POST)
-        [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Delay(int id, DateTime newDepartureTime)
+        public async Task<IActionResult> Delay(int id)
         {
             var flight = await _context.Flights.FindAsync(id);
             if (flight == null) return NotFound();
 
+            return View(flight); // Ye aapki Delay.cshtml file ko load karega
+        }
+        // Admin - Delay Flight (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delay(int id, DateTime newDepartureTime)
+        {
+            // Flight ko database se dhoondain
+            var flight = await _context.Flights.FindAsync(id);
+            if (flight == null) return NotFound();
+
+            // 🛑 VALIDATION: Check karein ke naya waqt scheduled waqt se pehle ka toh nahi?
+            if (newDepartureTime <= flight.DepartureTime)
+            {
+                // "newDepartureTime" key wahi hai jo aapne View mein use ki hai
+                ModelState.AddModelError("newDepartureTime", "Naya waqt scheduled departure se BAAD ka hona chahiye.");
+
+                // Agar ghalti hai toh wapis page dikhayein bina save kiye
+                return View(flight);
+            }
+
+            // Agar validation pass ho jaye toh data update karein
             flight.DepartureTime = newDepartureTime;
             flight.IsDelayed = true;
 
+            _context.Update(flight);
             await _context.SaveChangesAsync();
+
+            // Notification trigger karein
             await NotifyPassengersOfDelay(flight);
 
-            TempData["Success"] = "Passengers notified of delay.";
+            TempData["Success"] = $"Flight {flight.FlightNumber} delayed successfully and passengers notified!";
             return RedirectToAction(nameof(Index));
         }
 
