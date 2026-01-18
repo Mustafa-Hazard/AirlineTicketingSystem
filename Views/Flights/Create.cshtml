@@ -5,13 +5,13 @@
 }
 
 <h2>Create Flight</h2>
+
 <hr />
 
 <form asp-action="Create" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
     <div class="row">
-
         <div class="col-md-6 mb-3">
             <label asp-for="FlightNumber"></label>
             <input asp-for="FlightNumber" class="form-control" />
@@ -20,9 +20,7 @@
 
         <div class="col-md-6 mb-3">
             <label asp-for="Origin"></label>
-            <select asp-for="Origin"
-                    class="form-select"
-                    asp-items="@(ViewBag.Airports as SelectList)">
+            <select asp-for="Origin" class="form-select" asp-items="@(ViewBag.Airports as SelectList)">
                 <option value="">-- Select Origin Airport --</option>
             </select>
             <span asp-validation-for="Origin" class="text-danger"></span>
@@ -30,57 +28,37 @@
 
         <div class="col-md-6 mb-3">
             <label asp-for="Destination"></label>
-            <select asp-for="Destination"
-                    class="form-select"
-                    asp-items="@(ViewBag.Airports as SelectList)">
+            <select asp-for="Destination" class="form-select" asp-items="@(ViewBag.Airports as SelectList)">
                 <option value="">-- Select Destination Airport --</option>
             </select>
             <span asp-validation-for="Destination" class="text-danger"></span>
         </div>
 
-
-        @* <div class="col-md-6 mb-3">
-            <label asp-for="FromAirport"></label>
-            <input asp-for="FromAirport" class="form-control" />
-        </div>
-
-        <div class="col-md-6 mb-3">
-            <label asp-for="ToAirport"></label>
-            <input asp-for="ToAirport" class="form-control" />
-        </div> *@
-
-        <div class="col-md-6 mb-3">
+        <div class="col-md-3 mb-3">
             <label asp-for="DepartureTime"></label>
             <input asp-for="DepartureTime" type="datetime-local" class="form-control" />
-            <span asp-validation-for="DepartureTime" class="text-danger"></span>
         </div>
 
-        <div class="col-md-6 mb-3">
+        <div class="col-md-3 mb-3">
             <label asp-for="ArrivalTime"></label>
             <input asp-for="ArrivalTime" type="datetime-local" class="form-control" />
-            <span asp-validation-for="ArrivalTime" class="text-danger"></span>
         </div>
-
-        <hr />
 
         <h4>Seat Capacity</h4>
 
         <div class="col-md-4 mb-3">
             <label asp-for="EconomySeats"></label>
             <input asp-for="EconomySeats" class="form-control" />
-            <span asp-validation-for="EconomySeats" class="text-danger"></span>
         </div>
 
         <div class="col-md-4 mb-3">
             <label asp-for="BusinessSeats"></label>
             <input asp-for="BusinessSeats" class="form-control" />
-            <span asp-validation-for="BusinessSeats" class="text-danger"></span>
         </div>
 
         <div class="col-md-4 mb-3">
             <label asp-for="FirstClassSeats"></label>
             <input asp-for="FirstClassSeats" class="form-control" />
-            <span asp-validation-for="FirstClassSeats" class="text-danger"></span>
         </div>
 
         <h4>Prices</h4>
@@ -88,26 +66,17 @@
         <div class="col-md-4 mb-3">
             <label asp-for="EconomyPrice"></label>
             <input asp-for="EconomyPrice" class="form-control" />
-            <span asp-validation-for="EconomyPrice" class="text-danger"></span>
         </div>
 
         <div class="col-md-4 mb-3">
             <label asp-for="BusinessPrice"></label>
             <input asp-for="BusinessPrice" class="form-control" />
-            <span asp-validation-for="BusinessPrice" class="text-danger"></span>
         </div>
 
         <div class="col-md-4 mb-3">
             <label asp-for="FirstClassPrice"></label>
             <input asp-for="FirstClassPrice" class="form-control" />
-            <span asp-validation-for="FirstClassPrice" class="text-danger"></span>
         </div>
 
-
-    <button type="submit" class="btn btn-primary mt-3">Create Flight</button>
+        <button type="submit" class="btn btn-primary mt-3">Create Flight</button>
 </form>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");
-}
-}

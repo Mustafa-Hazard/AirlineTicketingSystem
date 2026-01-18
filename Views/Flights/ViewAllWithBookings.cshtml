@@ -8,12 +8,10 @@
 <h1 class="mb-4">Flights & Their Bookings</h1>
 
 <div class="accordion" id="accordionExample">
-
     @foreach (var flight in Model)
     {
         <div class="accordion-item">
-
-            <!-- HEADER -->
+            <!-- HEADER: Flight Info -->
             <h2 class="accordion-header" id="heading@flight.Id">
                 <button class="accordion-button @(isFirst ? "" : "collapsed")"
                         type="button"
@@ -21,19 +19,16 @@
                         data-bs-target="@($"#collapse{flight.Id}")"
                         aria-expanded="@(isFirst ? "true" : "false")"
                         aria-controls="@($"collapse{flight.Id}")">
-
                     @flight.FlightNumber — @flight.Origin → @flight.Destination
                 </button>
             </h2>
 
-            <!-- BODY -->
+            <!-- BODY: Booking Info -->
             <div id="@($"collapse{flight.Id}")"
                  class="accordion-collapse collapse @(isFirst ? "show" : "")"
                  aria-labelledby="heading@flight.Id"
                  data-bs-parent="#accordionExample">
-
                 <div class="accordion-body">
-
                     @if (flight.Bookings == null || !flight.Bookings.Any())
                     {
                         <strong>No bookings found for this flight.</strong>
@@ -51,12 +46,9 @@
                             }
                         </ul>
                     }
-
                 </div>
             </div>
         </div>
-
         isFirst = false;
     }
-
 </div>

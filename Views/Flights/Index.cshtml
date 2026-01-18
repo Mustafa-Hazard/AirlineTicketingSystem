@@ -26,51 +26,60 @@ else
     </p>
 }
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Flight</th>
-            <th>Route</th>
-            <th>Departure</th>
-            <th>Arrival</th>
-            <th>Economy / Avail</th>
-            <th>Business / Avail</th>
-            <th>First / Avail</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var f in Model)
-        {
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="thead-dark">
             <tr>
-                <td>@f.FlightNumber</td>
-                <td>@f.Origin → @f.Destination</td>
-                <td>
-                    @f.DepartureTime.ToString("g")
-                    @if (f.IsDelayed)
-                    {
-                        <span class="badge bg-danger ms-1">Delayed</span>
-                    }
-                </td>
-                <td>@f.ArrivalTime.ToString("g")</td>
-                <td>@f.EconomySeats / @f.AvailableEconomySeats</td>
-                <td>@f.BusinessSeats / @f.AvailableBusinessSeats</td>
-                <td>@f.FirstClassSeats / @f.AvailableFirstClassSeats</td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@f.Id">Details</a>
-
-
-                    @if (User.IsInRole("Admin"))
-                    {
-                        <span> | </span>
-                        <a asp-action="Edit" asp-route-id="@f.Id">Edit</a>
-                        <span> | </span>
-                        <a asp-action="Delete" asp-route-id="@f.Id">Delete</a>
-                        <span> | </span>
-                        <a asp-action="Delay" asp-route-id="@f.Id">Delay</a>
-                    }
-                </td>
+                <th>Flight</th>
+                <th>Route</th>
+                <th>Departure</th>
+                <th>Arrival</th>
+                <th>Economy</th>
+                <th>Business</th>
+                <th>First Class</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var f in Model)
+            {
+                <tr>
+                    <td>@f.FlightNumber</td>
+                    <td>@f.Origin → @f.Destination</td>
+                    <td>
+                        @f.DepartureTime.ToString("g")
+                        @if (f.IsDelayed)
+                        {
+                            <span class="badge bg-danger ms-1">Delayed</span>
+                        }
+                    </td>
+                    <td>@f.ArrivalTime.ToString("g")</td>
+                    <td>@f.EconomySeats / @f.AvailableEconomySeats</td>
+                    <td>@f.BusinessSeats / @f.AvailableBusinessSeats</td>
+                    <td>@f.FirstClassSeats / @f.AvailableFirstClassSeats</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@f.Id" class="btn btn-sm btn-info">
+                            Details
+                        </a>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <span> | </span>
+                            <a asp-action="Edit" asp-route-id="@f.Id" class="btn btn-sm btn-warning">
+                                Edit
+                            </a>
+                            <span> | </span>
+                            <a asp-action="Delete" asp-route-id="@f.Id" class="btn btn-sm btn-danger">
+                                Delete
+                            </a>
+                            <span> | </span>
+                            <a asp-action="Delay" asp-route-id="@f.Id" class="btn btn-sm btn-secondary">
+                                Delay
+                            </a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

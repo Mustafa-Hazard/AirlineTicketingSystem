@@ -6,6 +6,8 @@
 
 <h2>Edit Flight</h2>
 
+<hr />
+
 <form asp-action="Edit" method="post">
     <input type="hidden" asp-for="Id" />
 
@@ -23,6 +25,7 @@
             <select asp-for="Origin" class="form-select" asp-items="@(ViewBag.Airports as SelectList)">
                 <option value="">-- Select Origin Airport --</option>
             </select>
+            <span asp-validation-for="Origin" class="text-danger"></span>
         </div>
 
         <div class="col-md-6 mb-3">
@@ -30,6 +33,7 @@
             <select asp-for="Destination" class="form-select" asp-items="@(ViewBag.Airports as SelectList)">
                 <option value="">-- Select Destination Airport --</option>
             </select>
+            <span asp-validation-for="Destination" class="text-danger"></span>
         </div>
 
         <div class="col-md-3 mb-3">

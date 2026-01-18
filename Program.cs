@@ -76,6 +76,6 @@ app.UseAuthorization();
 // Define the default route pattern for MVC
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Splash}/{action=Index}/{id?}");
 
 app.Run();
