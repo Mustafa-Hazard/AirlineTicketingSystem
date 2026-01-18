@@ -59,6 +59,7 @@ else
                 <td>
                     <a asp-action="Details" asp-route-id="@f.Id">Details</a>
 
+
                     @if (User.IsInRole("Admin"))
                     {
                         <span> | </span>

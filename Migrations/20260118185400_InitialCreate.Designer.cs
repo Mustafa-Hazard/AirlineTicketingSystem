@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AirlineTicketingSystem.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20251215165913_AddedIsCancelled")]
-    partial class AddedIsCancelled
+    [Migration("20260118185400_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -142,6 +142,30 @@ namespace AirlineTicketingSystem.Migrations
                             Country = "Qatar",
                             IataCode = "DOH",
                             Name = "Hamad Intl"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            City = "Bangkok",
+                            Country = "Thailand",
+                            IataCode = "BKK",
+                            Name = "Suvarnabhumi"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            City = "Hong Kong",
+                            Country = "China",
+                            IataCode = "HKG",
+                            Name = "Hong Kong Intl"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            City = "Multan",
+                            Country = "Pakistan",
+                            IataCode = "MUX",
+                            Name = "Multan Intl"
                         });
                 });
 

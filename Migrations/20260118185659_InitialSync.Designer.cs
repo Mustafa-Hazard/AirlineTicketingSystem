@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AirlineTicketingSystem.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20251205131112_AddUsersEntity")]
-    partial class AddUsersEntity
+    [Migration("20260118185659_InitialSync")]
+    partial class InitialSync
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,150 @@ namespace AirlineTicketingSystem.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("AirlineTicketingSystem.Models.Entities.Airport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("Id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("City");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("Country");
+
+                    b.Property<string>("IataCode")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)")
+                        .HasColumnName("Iata_Code");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("Airport_Name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Airports");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            City = "Karachi",
+                            Country = "Pakistan",
+                            IataCode = "KHI",
+                            Name = "Jinnah Intl"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            City = "Lahore",
+                            Country = "Pakistan",
+                            IataCode = "LHE",
+                            Name = "Allama Iqbal Intl"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            City = "Islamabad",
+                            Country = "Pakistan",
+                            IataCode = "ISB",
+                            Name = "Islamabad Intl"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            City = "Dubai",
+                            Country = "UAE",
+                            IataCode = "DXB",
+                            Name = "Dubai Intl"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            City = "Abu Dhabi",
+                            Country = "UAE",
+                            IataCode = "AUH",
+                            Name = "Zayed Intl"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            City = "Jeddah",
+                            Country = "Saudi Arabia",
+                            IataCode = "JED",
+                            Name = "King Abdulaziz"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            City = "Riyadh",
+                            Country = "Saudi Arabia",
+                            IataCode = "RUH",
+                            Name = "King Khalid"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            City = "London",
+                            Country = "UK",
+                            IataCode = "LHR",
+                            Name = "Heathrow"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            City = "New York",
+                            Country = "USA",
+                            IataCode = "JFK",
+                            Name = "JFK Intl"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            City = "Doha",
+                            Country = "Qatar",
+                            IataCode = "DOH",
+                            Name = "Hamad Intl"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            City = "Bangkok",
+                            Country = "Thailand",
+                            IataCode = "BKK",
+                            Name = "Suvarnabhumi"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            City = "Hong Kong",
+                            Country = "China",
+                            IataCode = "HKG",
+                            Name = "Hong Kong Intl"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            City = "Multan",
+                            Country = "Pakistan",
+                            IataCode = "MUX",
+                            Name = "Multan Intl"
+                        });
+                });
 
             modelBuilder.Entity("AirlineTicketingSystem.Models.Entities.Booking", b =>
                 {
@@ -141,6 +285,9 @@ namespace AirlineTicketingSystem.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<bool>("IsCancelled")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDelayed")
                         .HasColumnType("bit");
 
@@ -204,6 +351,10 @@ namespace AirlineTicketingSystem.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)")
                         .HasColumnName("PhoneNumber");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("UserId");
 
                     b.HasKey("Id");
 

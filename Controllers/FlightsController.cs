@@ -1,60 +1,103 @@
 ﻿using AirlineTicketingSystem.Models;
 using AirlineTicketingSystem.Models.Entities;
+using AirlineTicketingSystem.Services;
 using AirlineTicketingSystem.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace AirlineTicketingSystem.Controllers
 {
     public class FlightsController : Controller
     {
         private readonly DatabaseContext _context;
+        private readonly IEmailService _emailService;
 
-        public FlightsController(DatabaseContext context)
+        public FlightsController(DatabaseContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
-        // Load airports into ViewBag for dropdowns
+        #region HELPERS
+
+        // Populate Airports Dropdown
         private void PopulateAirports()
         {
             var airports = _context.Airports
                 .OrderBy(a => a.City)
-                .ThenBy(a => a.Name)
                 .ToList();
 
-            // value = City, text = "City - Name (IATA)"
-            ViewBag.Airports = new SelectList(airports, "City", "DisplayName");
+            // Value: City, Text: "City - Name (IATA)"
+            var list = airports.Select(a => new {
+                Value = a.City,
+                Text = $"{a.City} - {a.Name} ({a.IataCode})"
+            });
+            ViewBag.Airports = new SelectList(list, "Value", "Text");
         }
 
-        // ========== ADMIN VIEW: FLIGHTS WITH BOOKINGS ==========
-
-        // Admin page: each flight with its bookings (accordion style)
-        [Authorize(Roles = "Admin")]
-        public IActionResult ViewAllWithBookings()
+        // Validate Flight Data
+        private bool ValidateFlightData(Flight model)
         {
-            var flights = _context.Flights
-                .Include(f => f.Bookings)
-                    .ThenInclude(b => b.Passenger)
-                .ToList();
+            bool isValid = true;
 
-            return View(flights);
+            // 1) Time Validation
+            if (model.ArrivalTime <= model.DepartureTime)
+            {
+                ModelState.AddModelError("ArrivalTime", "Arrival time must be later than departure time.");
+                isValid = false;
+            }
+
+            // 2) Route Validation
+            if (!string.IsNullOrWhiteSpace(model.Origin) && model.Origin == model.Destination)
+            {
+                ModelState.AddModelError("Destination", "Origin and Destination cannot be the same airport.");
+                isValid = false;
+            }
+
+            return isValid;
         }
 
-        // ========== PUBLIC PAGES: LIST + DETAILS ==========
+        // Map Flight Properties
+        private void MapFlightProperties(Flight existing, Flight model)
+        {
+            existing.FlightNumber = model.FlightNumber.Trim();
+            existing.Origin = model.Origin.Trim();
+            existing.Destination = model.Destination.Trim();
+            existing.FromAirport = model.Origin; // Dropdown se sync
+            existing.ToAirport = model.Destination; // Dropdown se sync
+            existing.DepartureTime = model.DepartureTime;
+            existing.ArrivalTime = model.ArrivalTime;
 
-        // ✅ CUSTOMERS CAN ACCESS - Everyone can see the list of flights
+            // Seat Counts & Available Seats Sync
+            existing.EconomySeats = model.EconomySeats;
+            existing.AvailableEconomySeats = Math.Min(existing.AvailableEconomySeats, model.EconomySeats);
+
+            existing.BusinessSeats = model.BusinessSeats;
+            existing.AvailableBusinessSeats = Math.Min(existing.AvailableBusinessSeats, model.BusinessSeats);
+
+            existing.FirstClassSeats = model.FirstClassSeats;
+            existing.AvailableFirstClassSeats = Math.Min(existing.AvailableFirstClassSeats, model.FirstClassSeats);
+
+            // Pricing & Status
+            existing.EconomyPrice = model.EconomyPrice;
+            existing.BusinessPrice = model.BusinessPrice;
+            existing.FirstClassPrice = model.FirstClassPrice;
+            existing.IsDelayed = model.IsDelayed;
+        }
+
+        #endregion
+
+        // ==========================================
+        // PUBLIC ACTIONS
+        // ==========================================
+
+        // List of all flights (Public)
         [AllowAnonymous]
-        public async Task<IActionResult> Index()
-        {
-            var flights = await _context.Flights.ToListAsync();
-            return View(flights);
-        }
+        public async Task<IActionResult> Index() => View(await _context.Flights.ToListAsync());
 
-        // ✅ CUSTOMERS CAN ACCESS - Everyone can see individual flight details
+        // Flight Details (Public)
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
@@ -63,61 +106,36 @@ namespace AirlineTicketingSystem.Controllers
             return View(flight);
         }
 
-        // ========== CREATE FLIGHT (ADMIN ONLY) ==========
-
-        // ❌ ONLY ADMIN - GET: show empty form
+        // Admin - Create Flight (GET)
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
-            PopulateAirports();   // needed for Origin/Destination dropdowns
+            PopulateAirports();
             return View();
         }
 
-        // ❌ ONLY ADMIN - POST: save new flight
+        // Admin - Create Flight (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Flight model)
         {
-            // Custom validation is added only if basic model binding is okay
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && ValidateFlightData(model))
             {
-                // 1) Arrival must be after departure
-                if (model.ArrivalTime <= model.DepartureTime)
-                {
-                    ModelState.AddModelError("ArrivalTime", "Arrival time must be later than departure time.");
-                }
+                model.AvailableEconomySeats = model.EconomySeats;
+                model.AvailableBusinessSeats = model.BusinessSeats;
+                model.AvailableFirstClassSeats = model.FirstClassSeats;
 
-                // 2) Origin and Destination cannot be same
-                if (!string.IsNullOrWhiteSpace(model.Origin) &&
-                    !string.IsNullOrWhiteSpace(model.Destination) &&
-                    model.Origin == model.Destination)
-                {
-                    ModelState.AddModelError("Destination", "Origin and Destination cannot be the same airport.");
-                }
+                _context.Flights.Add(model);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
 
-            // If anything failed (data annotations or our custom checks)
-            if (!ModelState.IsValid)
-            {
-                // repopulate dropdown before returning the view
-                PopulateAirports();
-                return View(model);
-            }
-
-            // Initialize available seats from total seats
-            model.AvailableEconomySeats = model.EconomySeats;
-            model.AvailableBusinessSeats = model.BusinessSeats;
-            model.AvailableFirstClassSeats = model.FirstClassSeats;
-
-            _context.Flights.Add(model);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            PopulateAirports();
+            return View(model);
         }
 
-        // ========== EDIT FLIGHT (ADMIN ONLY) ==========
-
-        // ❌ ONLY ADMIN - GET: show form with current data
+        // Admin - Edit Flight (GET)
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
@@ -128,72 +146,83 @@ namespace AirlineTicketingSystem.Controllers
             return View(flight);
         }
 
-        // ❌ ONLY ADMIN - POST: update flight
+        // Admin - Edit Flight (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(Flight model)
         {
-            // First, check built-in validation (Required, Range, etc.)
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && ValidateFlightData(model))
             {
-                // 1) Arrival > Departure
-                if (model.ArrivalTime <= model.DepartureTime)
-                {
-                    ModelState.AddModelError("ArrivalTime", "Arrival time must be later than departure time.");
-                }
+                var existing = await _context.Flights.FindAsync(model.Id);
+                if (existing == null) return NotFound();
 
-                // 2) Origin != Destination
-                if (!string.IsNullOrWhiteSpace(model.Origin) &&
-                    !string.IsNullOrWhiteSpace(model.Destination) &&
-                    model.Origin == model.Destination)
-                {
-                    ModelState.AddModelError("Destination", "Origin and Destination cannot be the same airport.");
-                }
+                MapFlightProperties(existing, model);
+
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
 
-            if (!ModelState.IsValid)
-            {
-                // Need dropdowns again when we re-show the form
-                PopulateAirports();
-                return View(model);
-            }
+            PopulateAirports();
+            return View(model);
+        }
 
-            var existing = await _context.Flights.FindAsync(model.Id);
-            if (existing == null) return NotFound();
+        // Admin - Delay Flight (POST)
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delay(int id, DateTime newDepartureTime)
+        {
+            var flight = await _context.Flights.FindAsync(id);
+            if (flight == null) return NotFound();
 
-            // Update basic fields
-            existing.FlightNumber = model.FlightNumber.Trim();
-            existing.Origin = model.Origin.Trim();
-            existing.Destination = model.Destination.Trim();
-            existing.FromAirport = model.FromAirport?.Trim();
-            existing.ToAirport = model.ToAirport?.Trim();
-            existing.DepartureTime = model.DepartureTime;
-            existing.ArrivalTime = model.ArrivalTime;
-
-            // Update seat counts and keep available seats in valid range
-            existing.EconomySeats = model.EconomySeats;
-            existing.AvailableEconomySeats = Math.Min(existing.AvailableEconomySeats, model.EconomySeats);
-
-            existing.BusinessSeats = model.BusinessSeats;
-            existing.AvailableBusinessSeats = Math.Min(existing.AvailableBusinessSeats, model.BusinessSeats);
-
-            existing.FirstClassSeats = model.FirstClassSeats;
-            existing.AvailableFirstClassSeats = Math.Min(existing.AvailableFirstClassSeats, model.FirstClassSeats);
-
-            // Update prices and delay status
-            existing.EconomyPrice = model.EconomyPrice;
-            existing.BusinessPrice = model.BusinessPrice;
-            existing.FirstClassPrice = model.FirstClassPrice;
-            existing.IsDelayed = model.IsDelayed;
+            flight.DepartureTime = newDepartureTime;
+            flight.IsDelayed = true;
 
             await _context.SaveChangesAsync();
+            await NotifyPassengersOfDelay(flight);
+
+            TempData["Success"] = "Passengers notified of delay.";
             return RedirectToAction(nameof(Index));
         }
 
-        // ========== SEARCH FLIGHTS (PUBLIC) ==========
+        // Notify Passengers of Delay
+        private async Task NotifyPassengersOfDelay(Flight flight)
+        {
+            var bookings = await _context.Bookings
+                .Where(b => b.FlightId == flight.Id)
+                .Include(b => b.Passenger)
+                .ToListAsync();
 
-        // ✅ CUSTOMERS CAN ACCESS - Simple search by origin, destination and date
+            foreach (var b in bookings)
+            {
+                if (b.Passenger != null)
+                {
+                    await _emailService.SendFlightDelayNotificationAsync(
+                        b.Passenger.ContactEmail, b.Passenger.FullName,
+                        flight.FlightNumber, flight.Origin, flight.Destination, flight.DepartureTime);
+                }
+            }
+        }
+
+        #region ADMIN ACTIONS
+        // Admin: View All Flights with Bookings
+        [Authorize(Roles = "Admin")]
+        public IActionResult ViewAllWithBookings()
+        {
+            var flights = _context.Flights
+                .Include(f => f.Bookings)
+                    .ThenInclude(b => b.Passenger)
+                .ToList();
+
+            return View(flights);
+        }
+        #endregion
+
+        // ==========================================
+        // SEARCH FLIGHTS
+        // ==========================================
+
+        // Simple search by origin, destination, and date (Public)
         [AllowAnonymous]
         public IActionResult Search(FlightSearchVM vm)
         {
@@ -216,44 +245,6 @@ namespace AirlineTicketingSystem.Controllers
                 .ToList();
 
             return View(vm);
-        }
-
-        // ========== DELETE FLIGHT (ADMIN ONLY) ==========
-
-        // ❌ ONLY ADMIN - GET: confirm delete
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var flight = await _context.Flights
-                .Include(f => f.Bookings)
-                .FirstOrDefaultAsync(f => f.Id == id);
-
-            if (flight == null) return NotFound();
-            return View(flight);
-        }
-
-        // ❌ ONLY ADMIN - POST: delete after confirmation
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var flight = await _context.Flights
-                .Include(f => f.Bookings)
-                .FirstOrDefaultAsync(f => f.Id == id);
-
-            if (flight == null) return NotFound();
-
-            // Do not allow deleting flights that already have bookings
-            if (flight.Bookings != null && flight.Bookings.Any())
-            {
-                TempData["Error"] = "Cannot delete flight that has bookings.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            _context.Flights.Remove(flight);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
         }
     }
 }

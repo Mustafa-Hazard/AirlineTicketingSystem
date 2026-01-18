@@ -3,7 +3,6 @@ using AirlineTicketingSystem.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
 namespace AirlineTicketingSystem.Controllers
 {
     [Authorize(Roles = "Admin")] // Only Admin can access all actions in this controller
@@ -16,11 +15,14 @@ namespace AirlineTicketingSystem.Controllers
             _context = context;
         }
 
-        // ========== 1) BOOKINGS PER FLIGHT REPORT ==========
-        public async Task<IActionResult> BookingsPerFlight()
+        // ========== 1) BOOKINGS PER FLIGHT REPORT ========== 
+        // Optional Date Filter
+        public async Task<IActionResult> BookingsPerFlight(DateTime? startDate, DateTime? endDate)
         {
             var flights = await _context.Flights
                 .Include(f => f.Bookings)
+                .Where(f => (!startDate.HasValue || f.DepartureTime >= startDate) &&
+                            (!endDate.HasValue || f.DepartureTime <= endDate))
                 .ToListAsync();
 
             var rows = flights
@@ -44,11 +46,14 @@ namespace AirlineTicketingSystem.Controllers
             return View(rows);
         }
 
-        // ========== 2) REVENUE STATISTICS REPORT ==========
-        public async Task<IActionResult> RevenueStatistics()
+        // ========== 2) REVENUE STATISTICS REPORT ========== 
+        // Optional Date Filter
+        public async Task<IActionResult> RevenueStatistics(DateTime? startDate, DateTime? endDate)
         {
             var bookings = await _context.Bookings
                 .Include(b => b.Flight)
+                .Where(b => (!startDate.HasValue || b.Flight.DepartureTime >= startDate) &&
+                            (!endDate.HasValue || b.Flight.DepartureTime <= endDate))
                 .ToListAsync();
 
             var totalBookings = bookings.Count;

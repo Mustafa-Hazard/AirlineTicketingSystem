@@ -139,6 +139,30 @@ namespace AirlineTicketingSystem.Migrations
                             Country = "Qatar",
                             IataCode = "DOH",
                             Name = "Hamad Intl"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            City = "Bangkok",
+                            Country = "Thailand",
+                            IataCode = "BKK",
+                            Name = "Suvarnabhumi"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            City = "Hong Kong",
+                            Country = "China",
+                            IataCode = "HKG",
+                            Name = "Hong Kong Intl"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            City = "Multan",
+                            Country = "Pakistan",
+                            IataCode = "MUX",
+                            Name = "Multan Intl"
                         });
                 });
 

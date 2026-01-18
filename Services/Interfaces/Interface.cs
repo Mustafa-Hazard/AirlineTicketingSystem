@@ -32,5 +32,16 @@
             byte[] pdfBytes,
             string pdfFileName
         );
+    
+
+Task SendFlightDelayNotificationAsync(
+            string toEmail,
+            string passengerName,
+            string flightNumber,
+            string origin,
+            string destination,
+            DateTime departureTime
+        );
     }
+    
 }
