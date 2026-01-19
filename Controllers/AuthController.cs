@@ -6,6 +6,7 @@ using AirlineTicketingSystem.Models.ViewModels;
 using AirlineTicketingSystem.Models.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 
 namespace AirlineTicketingSystem.Controllers
 {
@@ -18,10 +19,14 @@ namespace AirlineTicketingSystem.Controllers
             _db = db;
         }
 
-        // GET: Login
+        // ==========================================
+        // LOGIN ACTIONS
+        // ==========================================
+
+        [HttpGet]
         public IActionResult Login()
         {
-            // If already logged in, redirect to dashboard
+            // Agar user pehle se login hai toh usay dashboard bhej dein
             if (User.Identity?.IsAuthenticated == true)
             {
                 return RedirectToAction("Index", "Dashboard");
@@ -29,37 +34,38 @@ namespace AirlineTicketingSystem.Controllers
             return View();
         }
 
-        // POST: Login
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginVM model)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+            if (!ModelState.IsValid) return View(model);
 
-            // Check if user exists
+            // 1. Username check karein
             var user = await _db.Users
                 .FirstOrDefaultAsync(u => u.UserName == model.UserName);
 
             if (user == null)
             {
-                ModelState.AddModelError("", "Invalid username or password.");
+                ModelState.AddModelError("", "Username not Found. First register .");
                 return View(model);
             }
 
-            // Verify password
+            // 2. Password Verify karein (Specific Notification added here)
             if (!BCrypt.Net.BCrypt.Verify(model.Password, user.HashedPassword))
             {
-                ModelState.AddModelError("", "Invalid username or password.");
+                // UI par error dikhane ke liye
+                ModelState.AddModelError("Password", "Wrong Password Try Again.");
+
+                // Top notification bar ke liye
+                TempData["ErrorMessage"] = "Authentication Failed: Incorrect Password!";
+
                 return View(model);
             }
 
-            // Generate JWT token
+            // 3. Token Generate karein
             var token = GenerateToken(user);
 
-            // Set cookie
+            // 4. Cookie set karein
             Response.Cookies.Append("jwt_token", token, new CookieOptions
             {
                 HttpOnly = true,
@@ -68,23 +74,21 @@ namespace AirlineTicketingSystem.Controllers
                 Expires = DateTimeOffset.UtcNow.AddMinutes(30)
             });
 
-            TempData["SuccessMessage"] = $"Welcome back, {user.UserName}!";
+            TempData["SuccessMessage"] = $"Khush Amdeed, {user.UserName}!";
 
-            // Redirect based on role
-            if (user.Role == "Admin")
-            {
-                return RedirectToAction("AdminDashboard", "Dashboard");
-            }
-            else
-            {
-                return RedirectToAction("CustomerDashboard", "Dashboard");
-            }
+            // 5. Role based redirection
+            return user.Role == "Admin"
+                ? RedirectToAction("AdminDashboard", "Dashboard")
+                : RedirectToAction("CustomerDashboard", "Dashboard");
         }
 
-        // GET: Register
+        // ==========================================
+        // REGISTER ACTIONS
+        // ==========================================
+
+        [HttpGet]
         public IActionResult Register()
         {
-            // If already logged in, redirect to dashboard
             if (User.Identity?.IsAuthenticated == true)
             {
                 return RedirectToAction("Index", "Dashboard");
@@ -92,56 +96,51 @@ namespace AirlineTicketingSystem.Controllers
             return View();
         }
 
-        // POST: Register
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterVM model)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+            if (!ModelState.IsValid) return View(model);
 
-            // Check if username already exists
+            // Username uniqueness check
             if (await _db.Users.AnyAsync(u => u.UserName == model.UserName))
             {
-                ModelState.AddModelError("UserName", "Username already exists. Please choose another.");
+                ModelState.AddModelError("UserName", "Already taken.");
                 return View(model);
             }
 
-            // Create new user
             var user = new User
             {
                 UserName = model.UserName,
                 HashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password)
             };
 
-            // First user becomes Admin, all others become Customer
-            if (!await _db.Users.AnyAsync())
-            {
-                user.Role = "Admin";
-                TempData["SuccessMessage"] = "Admin account created successfully! Please login.";
-            }
-            else
-            {
+        
                 user.Role = "Customer";
-                TempData["SuccessMessage"] = "Registration successful! Please login.";
-            }
+                TempData["SuccessMessage"] = "Registration successful ! Please login now .";
+            
 
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
 
             return RedirectToAction("Login");
         }
-        // Logout
+
+        // ==========================================
+        // LOGOUT
+        // ==========================================
+
         public IActionResult Logout()
         {
             Response.Cookies.Delete("jwt_token");
-            TempData["InfoMessage"] = "You have been logged out successfully.";
+            TempData["InfoMessage"] = "Successful logout :/.";
             return RedirectToAction("Index", "Home");
         }
 
-        // Generate JWT Token
+        // ==========================================
+        // JWT HELPER
+        // ==========================================
+
         private string GenerateToken(User user)
         {
             var claims = new[]
@@ -151,10 +150,8 @@ namespace AirlineTicketingSystem.Controllers
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             };
 
-            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(
-                "class-work-5E-your-super-secret-key-minimum-32-characters"
-            ));
-
+            // Security Note: Use a more secure way to store keys in production (e.g., AppSettings)
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("class-work-5E-your-super-secret-key-minimum-32-characters"));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(

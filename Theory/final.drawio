@@ -1,0 +1,137 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" version="29.3.2">
+  <diagram name="Page-1" id="kPjkBy5lgo9PAyslZbgv">
+    <mxGraphModel dx="1042" dy="562" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-1" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" value="" vertex="1">
+          <mxGeometry height="50" width="50" x="10" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-2" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="60" y="54.5" as="sourcePoint" />
+            <mxPoint x="130" y="54.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="User selects a flight" vertex="1">
+          <mxGeometry height="40" width="120" x="130" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-4" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="250" y="59.5" as="sourcePoint" />
+            <mxPoint x="320" y="59.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="User enters passenger details" vertex="1">
+          <mxGeometry height="40" width="120" x="320" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-6" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <Array as="points" />
+            <mxPoint x="440" y="59.5" as="sourcePoint" />
+            <mxPoint x="500" y="59.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="System validates&amp;nbsp;&lt;br&gt;passenger info." vertex="1">
+          <mxGeometry height="40" width="120" x="500" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-10" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="620" y="59.5" as="sourcePoint" />
+            <mxPoint x="690" y="59.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="System checks&amp;nbsp;&lt;br&gt;seat availability" vertex="1">
+          <mxGeometry height="40" width="120" x="690" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-12" parent="1" style="rhombus;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="80" width="80" x="710" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-13" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="749.5" y="80" as="sourcePoint" />
+            <mxPoint x="749.5" y="130" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-14" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="710" y="169.5" as="sourcePoint" />
+            <mxPoint x="640" y="169.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-15" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Yes" vertex="1">
+          <mxGeometry height="30" width="60" x="650" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-16" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="System creates&lt;br&gt;booking" vertex="1">
+          <mxGeometry height="40" width="100" x="540" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-19" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="749.5" y="210" as="sourcePoint" />
+            <mxPoint x="750" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-20" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="540" y="169" as="sourcePoint" />
+            <mxPoint x="480" y="169" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-21" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="System assigns&amp;nbsp;&lt;br&gt;seat availability" vertex="1">
+          <mxGeometry height="35" width="120" x="360" y="155" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-22" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="360" y="169" as="sourcePoint" />
+            <mxPoint x="300" y="169" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-23" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="System saves booking details" vertex="1">
+          <mxGeometry height="40" width="120" x="180" y="152.5" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-24" edge="1" parent="1" source="2RtOcYikbtPvmo-FxKXE-23" style="endArrow=classic;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="170" y="210" as="sourcePoint" />
+            <mxPoint x="110" y="173" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-25" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="System sends ticket via email" vertex="1">
+          <mxGeometry height="35" width="90" x="20" y="157.5" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-26" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Error" vertex="1">
+          <mxGeometry height="50" width="120" x="700" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-28" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="700" y="274.5" as="sourcePoint" />
+            <mxPoint x="630" y="274.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-29" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" value="" vertex="1">
+          <mxGeometry height="50" width="50" x="580" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-30" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="No" vertex="1">
+          <mxGeometry height="30" width="60" x="700" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-32" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Start" vertex="1">
+          <mxGeometry height="30" width="60" x="5" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-34" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="End" vertex="1">
+          <mxGeometry height="30" width="60" x="575" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-35" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="64" y="280" as="sourcePoint" />
+            <mxPoint x="64" y="192.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2RtOcYikbtPvmo-FxKXE-39" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="60" y="280" as="sourcePoint" />
+            <mxPoint x="580" y="280" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

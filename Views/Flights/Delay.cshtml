@@ -8,25 +8,45 @@
 
 <hr />
 
+@if (Model.IsDelayed)
+{
+    <div class="alert alert-warning">
+        <strong>Notice:</strong> This flight (@Model.FlightNumber) is already marked as delayed.
+    </div>
+}
+
 <form method="post" asp-action="Delay" asp-route-id="@Model.Id">
     @Html.AntiForgeryToken()
 
     <div class="mb-3">
+        <label class="form-label">Current Departure: @Model.DepartureTime.ToString("f")</label>
+        <br />
         <label class="form-label">New Departure Time</label>
-        <input type="datetime-local" class="form-control" name="newDepartureTime" required />
+        @* Added ID 'delayPicker' to match your script *@
+        <input type="datetime-local" id="delayPicker" class="form-control" name="newDepartureTime"
+               required @(Model.IsDelayed ? "disabled" : "") />
+        <span class="text-danger">@Html.ValidationMessage("newDepartureTime")</span>
     </div>
 
-    <button type="submit" class="btn btn-primary">Update Delay</button>
+    @* The button becomes disabled and changes color if IsDelayed is true *@
+    <button type="submit"
+            class="btn @(Model.IsDelayed ? "btn-secondary" : "btn-primary")"
+            @(Model.IsDelayed ? "disabled" : "")>
+        @(Model.IsDelayed ? "Already Delayed" : "Update Delay")
+    </button>
 </form>
 
 <div>
-    <a class="btn btn-secondary mt-3" asp-action="Index">Back to Flight List</a>
+    <a class="btn btn-outline-secondary mt-3" asp-action="Index">Back to Flight List</a>
 </div>
 
 @section Scripts {
     <script>
-        // Calendar mein minimum date set karna
-        var currentDeparture = "@Model.DepartureTime.ToString("yyyy-MM-ddTHH:mm")";
-        document.getElementById("delayPicker").setAttribute("min", currentDeparture);
+        // Set minimum date for the picker
+        var picker = document.getElementById("delayPicker");
+        if(picker) {
+            var currentDeparture = "@Model.DepartureTime.ToString("yyyy-MM-ddTHH:mm")";
+            picker.setAttribute("min", currentDeparture);
+        }
     </script>
 }
