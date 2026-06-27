@@ -100,12 +100,6 @@ Booking workflows were validated using:
 
 ---
 
-## 📄 License
-
-*(Add your license here — e.g. MIT)*
-
----
-
 ## 👨‍💻 Author
 
 **Mustafa Muhammad Iqbal**
