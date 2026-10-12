@@ -11,9 +11,23 @@ var builder = WebApplication.CreateBuilder(args);
 QuestPDF.Settings.License = LicenseType.Community;
 builder.Services.AddControllersWithViews();
 
-var rawDbUrl = Environment.GetEnvironmentVariable("DATABASE_URL") ?? Environment.GetEnvironmentVariable("POSTGRES_URL");
-var connectionString = rawDbUrl ?? builder.Configuration.GetConnectionString("DefaultConnection");
-var usePostgres = rawDbUrl != null || builder.Configuration.GetValue<bool>("UsePostgreSQL", false);
+var rawDbUrl = Environment.GetEnvironmentVariable("DATABASE_URL") 
+    ?? Environment.GetEnvironmentVariable("POSTGRES_URL") 
+    ?? Environment.GetEnvironmentVariable("POSTGRESUL_URL");
+
+string? connectionString;
+bool usePostgres;
+
+if (!string.IsNullOrEmpty(rawDbUrl))
+{
+    usePostgres = true;
+    connectionString = FormatPostgresUrl(rawDbUrl);
+}
+else
+{
+    usePostgres = builder.Configuration.GetValue<bool>("UsePostgreSQL", false);
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+}
 
 if (usePostgres && !string.IsNullOrEmpty(connectionString))
     builder.Services.AddDbContext<DatabaseContext>(options => options.UseNpgsql(connectionString));
@@ -65,3 +79,26 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllerRoute(name: "default", pattern: "{controller=Splash}/{action=Index}/{id?}");
 app.Run();
+
+static string FormatPostgresUrl(string url)
+{
+    if (url.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) || 
+        url.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+    {
+        try
+        {
+            var uri = new Uri(url);
+            var userInfo = uri.UserInfo.Split(':');
+            var user = userInfo.Length > 0 ? Uri.UnescapeDataString(userInfo[0]) : "";
+            var pass = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+            var port = uri.Port > 0 ? uri.Port : 5432;
+            var db = uri.AbsolutePath.TrimStart('/');
+            return $"Host={uri.Host};Port={port};Database={db};Username={user};Password={pass};SSL Mode=Prefer;Trust Server Certificate=true;";
+        }
+        catch
+        {
+            return url;
+        }
+    }
+    return url;
+}
