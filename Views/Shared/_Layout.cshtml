@@ -1,177 +1,178 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - AeroNexa</title>
+    <meta name="description" content="AeroNexa — Premium Airline Ticketing Platform. Book flights, manage bookings, and track your journeys." />
+    <title>@ViewData["Title"] — AeroNexa</title>
 
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/bootswatch-css/bootstrap.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Bootstrap CSS (via Bootswatch theme overridden by our own) -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
+
+    <!-- Our design system -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Views/Shared/_Layout.cshtml.css" asp-append-version="true" />
 
-    <style>
-        body.dark-mode {
-            background-color: #121212;
-            color: #e8e8e8;
-        }
-
-        .dark-mode .navbar {
-            background-color: #222 !important;
-        }
-
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1055;
-        }
-
-        .search-form input[type="text"] {
-            border: 1px solid #ccc;
-            border-radius: .25rem 0 0 .25rem;
-            padding: .375rem .75rem;
-        }
-
-        .search-form button {
-            border-radius: 0 .25rem .25rem 0;
-            border: 1px solid #ccc;
-            border-left: 0;
-            padding: .375rem .75rem;
-            background-color: #fff;
-        }
-    </style>
+    @await RenderSectionAsync("Styles", required: false)
 </head>
+<body id="pageBody">
 
-<body>
     <header>
-        <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+        <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">
-                <a class="navbar-brand fw-bold" href="@Url.Action("Index", "Home")">
-                    <i class="bi bi-airplane-fill me-1"></i> AeroNexa
+
+                <!-- Brand -->
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    AeroNexa
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#navbarColor01" aria-controls="navbarColor01"
+                <!-- Toggler -->
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarMain" aria-controls="navbarMain"
                         aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+                    <i class="bi bi-list text-light fs-5"></i>
                 </button>
 
-                <div class="collapse navbar-collapse" id="navbarColor01">
-                    <ul class="navbar-nav me-auto">
+                <div class="collapse navbar-collapse" id="navbarMain">
+
+                    <!-- Main nav links -->
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">
-                                Home
+                                <i class="bi bi-house"></i> Home
                             </a>
                         </li>
 
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
-                                    <i class="bi bi-speedometer2"></i> Dashboard
-                                </a>
-                            </li>
-                        }
-
-                        <!-- Flights Dropdown -->
+                        <!-- Flights -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                                 <i class="bi bi-airplane"></i> Flights
                             </a>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" asp-action="Index" asp-controller="Flights">View All</a>
-                                <a class="dropdown-item" asp-action="Search" asp-controller="Flights">Search Flights</a>
+                                <a class="dropdown-item" asp-controller="Flights" asp-action="Index">
+                                    <i class="bi bi-list-ul"></i> All Flights
+                                </a>
+                                <a class="dropdown-item" asp-controller="Flights" asp-action="Search">
+                                    <i class="bi bi-search"></i> Search Flights
+                                </a>
                                 @if (User.IsInRole("Admin"))
                                 {
                                     <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" asp-action="Create" asp-controller="Flights">Create Flight</a>
-                                    <a class="dropdown-item" asp-controller="Flights" asp-action="ViewAllWithBookings">Flights with Bookings</a>
+                                    <a class="dropdown-item" asp-controller="Flights" asp-action="Create">
+                                        <i class="bi bi-plus-circle"></i> Add Flight
+                                    </a>
                                 }
                             </div>
                         </li>
 
-                        <!-- Bookings Dropdown -->
+                        <!-- Bookings -->
                         @if (User.IsInRole("Admin") || User.IsInRole("Customer"))
                         {
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button">
                                 <i class="bi bi-journal-bookmark-fill"></i> Bookings
                             </a>
                             <div class="dropdown-menu">
-
                                 @if (User.Identity.IsAuthenticated && User.IsInRole("Customer"))
                                 {
                                     <a class="dropdown-item" asp-controller="Booking" asp-action="Create">
-                                        <i class="bi bi-plus-circle"></i> Create Booking
+                                        <i class="bi bi-plus-circle"></i> New Booking
                                     </a>
-
                                     <a class="dropdown-item" asp-controller="Booking" asp-action="MyBookings">
                                         <i class="bi bi-journal-text"></i> My Bookings
                                     </a>
                                 }
-
                                 @if (User.IsInRole("Admin"))
                                 {
                                     <a class="dropdown-item" asp-controller="Booking" asp-action="Index">
-                                        <i class="bi bi-list-check"></i> View All Bookings
+                                        <i class="bi bi-list-check"></i> All Bookings
                                     </a>
                                 }
                             </div>
-
                         </li>
                         }
 
-                        <!-- Passengers Dropdown (Admin Only) -->
+                        <!-- Passengers (Admin) -->
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button">
                                     <i class="bi bi-people-fill"></i> Passengers
                                 </a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" asp-action="Index" asp-controller="Passenger">View All</a>
-                                    <a class="dropdown-item" asp-action="Create" asp-controller="Passenger">Create</a>
+                                    <a class="dropdown-item" asp-action="Index" asp-controller="Passenger">
+                                        <i class="bi bi-person-lines-fill"></i> View All
+                                    </a>
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="Passenger">
+                                        <i class="bi bi-person-plus"></i> Add Passenger
+                                    </a>
                                 </div>
                             </li>
                         }
 
-                        <!-- Reports Dropdown (Admin Only) -->
+                        <!-- Reports (Admin) -->
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button">
                                     <i class="bi bi-graph-up-arrow"></i> Reports
                                 </a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" asp-controller="Reports" asp-action="BookingsPerFlight">Bookings per Flight</a>
-                                    <a class="dropdown-item" asp-controller="Reports" asp-action="RevenueStatistics">Revenue Statistics</a>
+                                    <a class="dropdown-item" asp-controller="Reports" asp-action="BookingsPerFlight">
+                                        <i class="bi bi-bar-chart"></i> Bookings per Flight
+                                    </a>
+                                    <a class="dropdown-item" asp-controller="Reports" asp-action="RevenueStatistics">
+                                        <i class="bi bi-currency-dollar"></i> Revenue Statistics
+                                    </a>
                                 </div>
                             </li>
                         }
                     </ul>
 
-                    <!-- Search Form -->
+                    <!-- Search Bar -->
                     <form class="d-flex me-3" method="get" asp-controller="Flights" asp-action="Search">
-                        <input class="form-control me-sm-2" type="search" name="Origin" placeholder="Search flights...">
-                        <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
+                        <div class="input-group" style="max-width:260px">
+                            <input class="form-control" type="search" name="Origin"
+                                   placeholder="&#xF52A; Search flights..." aria-label="Search flights">
+                        </div>
                     </form>
 
-                    <!-- Auth Links -->
-                    <ul class="navbar-nav">
+                    <!-- Auth section -->
+                    <ul class="navbar-nav align-items-center gap-1">
                         @if (User.Identity.IsAuthenticated)
                         {
+                            <!-- Dashboard shortcut -->
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+
+                            <!-- User dropdown -->
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                                    <i class="bi bi-person-circle"></i> @User.Identity.Name
+                                <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown" href="#" role="button">
+                                    <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#1a73e8,#00c6ff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;color:#fff;">
+                                        @(User.Identity.Name?.Substring(0, 1).ToUpper())
+                                    </div>
+                                    @User.Identity.Name
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end">
                                     <div class="dropdown-header">
-                                        Role: <strong>@(User.IsInRole("Admin") ? "Admin" : "Passenger")</strong>
+                                        <span class="pulse-dot me-2"></span>
+                                        @(User.IsInRole("Admin") ? "Administrator" : "Passenger")
                                     </div>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" asp-controller="Auth" asp-action="Logout">
-                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                        <i class="bi bi-box-arrow-right text-danger"></i> Logout
                                     </a>
                                 </div>
                             </li>
@@ -184,15 +185,15 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Auth" asp-action="Login">
+                                <a class="btn btn-primary btn-sm" asp-controller="Auth" asp-action="Login">
                                     <i class="bi bi-box-arrow-in-right"></i> Login
                                 </a>
                             </li>
                         }
                     </ul>
 
-                    <!-- Dark Mode Toggle -->
-                    <button class="btn btn-outline-light ms-2" id="toggleTheme">
+                    <!-- Theme toggle -->
+                    <button class="theme-toggle ms-2 btn" id="toggleTheme" title="Toggle theme" aria-label="Toggle theme">
                         <i class="bi bi-moon-stars" id="themeIcon"></i>
                     </button>
                 </div>
@@ -200,9 +201,39 @@
         </nav>
     </header>
 
-    <div class="container mt-4">
-        @if (ViewData["Breadcrumb"] != null)
-        {
+    <!-- Toast notifications (TempData) -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div id="toast-container">
+            <div class="alert alert-success d-flex align-items-center gap-3 shadow" role="alert">
+                <i class="bi bi-check-circle-fill fs-5"></i>
+                <span>@TempData["SuccessMessage"]</span>
+            </div>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div id="toast-container">
+            <div class="alert alert-danger d-flex align-items-center gap-3 shadow" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                <span>@TempData["ErrorMessage"]</span>
+            </div>
+        </div>
+    }
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div id="toast-container">
+            <div class="alert alert-info d-flex align-items-center gap-3 shadow" role="alert">
+                <i class="bi bi-info-circle-fill fs-5"></i>
+                <span>@TempData["InfoMessage"]</span>
+            </div>
+        </div>
+    }
+
+    <!-- Breadcrumb -->
+    @if (ViewData["Breadcrumb"] != null)
+    {
+        <div class="container mt-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     @foreach (var item in (List<string>)ViewData["Breadcrumb"])
@@ -211,44 +242,83 @@
                     }
                 </ol>
             </nav>
-        }
+        </div>
+    }
 
+    <div class="container mt-4">
         <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted mt-4">
+    <footer class="footer text-center mt-5">
         <div class="container">
-            &copy; <span id="year"></span> - AeroNexa -
-            <a asp-controller="Home" asp-action="AboutUs">About Us</a>
-            <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="d-flex flex-wrap justify-content-center align-items-center gap-3">
+                <span>
+                    <span style="background:linear-gradient(90deg,#1a73e8,#00c6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;font-family:'Space Grotesk',sans-serif;">✈ AeroNexa</span>
+                    &copy; <span id="year"></span>
+                </span>
+                <span style="color:rgba(255,255,255,0.1)">|</span>
+                <a asp-controller="Home" asp-action="AboutUs">About</a>
+                <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+                <span style="color:rgba(255,255,255,0.1)">|</span>
+                <span>Built with <span style="color:#ef4444">♥</span> in Pakistan</span>
+            </div>
         </div>
     </footer>
 
+    <!-- Toast auto-dismiss container -->
     <div id="toast-container"></div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // Year
         document.getElementById("year").textContent = new Date().getFullYear();
 
+        // Theme toggle with persistence
+        const bodyEl = document.getElementById('pageBody');
         const toggleBtn = document.getElementById('toggleTheme');
         const icon = document.getElementById('themeIcon');
 
+        const savedTheme = localStorage.getItem('aeronexa-theme');
+        if (savedTheme === 'light') {
+            bodyEl.classList.add('light-mode');
+            icon.classList.replace('bi-moon-stars', 'bi-sun-fill');
+        }
+
         toggleBtn.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            icon.classList.toggle('bi-moon-stars');
-            icon.classList.toggle('bi-sun-fill');
+            bodyEl.classList.toggle('light-mode');
+            const isLight = bodyEl.classList.contains('light-mode');
+            icon.classList.toggle('bi-moon-stars', !isLight);
+            icon.classList.toggle('bi-sun-fill', isLight);
+            localStorage.setItem('aeronexa-theme', isLight ? 'light' : 'dark');
         });
 
+        // Auto-dismiss alerts after 4s
+        setTimeout(() => {
+            document.querySelectorAll('#toast-container .alert').forEach(a => {
+                a.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                a.style.opacity = '0';
+                a.style.transform = 'translateX(100%)';
+                setTimeout(() => a.remove(), 500);
+            });
+        }, 4000);
+
+        // Toast function for dynamic use
         function showToast(message, type = "success") {
+            const container = document.getElementById("toast-container");
             const toast = document.createElement("div");
-            toast.className = `alert alert-${type} fade show`;
-            toast.innerHTML = message;
-            document.getElementById("toast-container").appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            toast.className = `alert alert-${type} d-flex align-items-center gap-3 shadow`;
+            const icons = { success: 'check-circle-fill', danger: 'exclamation-triangle-fill', info: 'info-circle-fill', warning: 'exclamation-circle-fill' };
+            toast.innerHTML = `<i class="bi bi-${icons[type] || 'info-circle-fill'} fs-5"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                toast.style.opacity = '0'; toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
         }
     </script>
 

@@ -43,8 +43,8 @@ A role-based airline reservation platform built on ASP.NET Core 8 MVC, with sepa
 ### Setup
 
 ```bash
-git clone https://github.com/Mustafa-Hazard/AeroNexa.git
-cd AeroNexa
+git clone https://github.com/Mustafa-Hazard/AirlineTicketingSystem.git
+cd AirlineTicketingSystem
 ```
 
 **1. Configure the database connection**

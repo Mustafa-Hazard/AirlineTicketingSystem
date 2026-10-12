@@ -13,24 +13,19 @@ namespace AirlineTicketingSystem.Controllers
     public class AuthController : Controller
     {
         private readonly DatabaseContext _db;
+        private readonly IConfiguration _config;
 
-        public AuthController(DatabaseContext db)
+        public AuthController(DatabaseContext db, IConfiguration config)
         {
             _db = db;
+            _config = config;
         }
-
-        // ==========================================
-        // LOGIN ACTIONS
-        // ==========================================
 
         [HttpGet]
         public IActionResult Login()
         {
-            // Agar user pehle se login hai toh usay dashboard bhej dein
             if (User.Identity?.IsAuthenticated == true)
-            {
                 return RedirectToAction("Index", "Dashboard");
-            }
             return View();
         }
 
@@ -40,32 +35,21 @@ namespace AirlineTicketingSystem.Controllers
         {
             if (!ModelState.IsValid) return View(model);
 
-            // 1. Username check karein
-            var user = await _db.Users
-                .FirstOrDefaultAsync(u => u.UserName == model.UserName);
-
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.UserName == model.UserName);
             if (user == null)
             {
-                ModelState.AddModelError("", "Username not Found. First register .");
+                ModelState.AddModelError("", "Username not found. Please register first.");
                 return View(model);
             }
 
-            // 2. Password Verify karein (Specific Notification added here)
             if (!BCrypt.Net.BCrypt.Verify(model.Password, user.HashedPassword))
             {
-                // UI par error dikhane ke liye
-                ModelState.AddModelError("Password", "Wrong Password Try Again.");
-
-                // Top notification bar ke liye
+                ModelState.AddModelError("Password", "Incorrect password. Please try again.");
                 TempData["ErrorMessage"] = "Authentication Failed: Incorrect Password!";
-
                 return View(model);
             }
 
-            // 3. Token Generate karein
             var token = GenerateToken(user);
-
-            // 4. Cookie set karein
             Response.Cookies.Append("jwt_token", token, new CookieOptions
             {
                 HttpOnly = true,
@@ -74,25 +58,18 @@ namespace AirlineTicketingSystem.Controllers
                 Expires = DateTimeOffset.UtcNow.AddMinutes(30)
             });
 
-            TempData["SuccessMessage"] = $"Khush Amdeed, {user.UserName}!";
+            TempData["SuccessMessage"] = $"Welcome back, {user.UserName}!";
 
-            // 5. Role based redirection
             return user.Role == "Admin"
                 ? RedirectToAction("AdminDashboard", "Dashboard")
                 : RedirectToAction("CustomerDashboard", "Dashboard");
         }
 
-        // ==========================================
-        // REGISTER ACTIONS
-        // ==========================================
-
         [HttpGet]
         public IActionResult Register()
         {
             if (User.Identity?.IsAuthenticated == true)
-            {
                 return RedirectToAction("Index", "Dashboard");
-            }
             return View();
         }
 
@@ -102,47 +79,45 @@ namespace AirlineTicketingSystem.Controllers
         {
             if (!ModelState.IsValid) return View(model);
 
-            // Username uniqueness check
             if (await _db.Users.AnyAsync(u => u.UserName == model.UserName))
             {
-                ModelState.AddModelError("UserName", "Already taken.");
+                ModelState.AddModelError("UserName", "Username already taken.");
                 return View(model);
             }
 
             var user = new User
             {
                 UserName = model.UserName,
-                HashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password)
+                HashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password),
+                Role = "Customer"
             };
-
-        
-                user.Role = "Customer";
-                TempData["SuccessMessage"] = "Registration successful ! Please login now .";
-            
 
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
 
+            TempData["SuccessMessage"] = "Registration successful! Please login now.";
             return RedirectToAction("Login");
         }
-
-        // ==========================================
-        // LOGOUT
-        // ==========================================
 
         public IActionResult Logout()
         {
             Response.Cookies.Delete("jwt_token");
-            TempData["InfoMessage"] = "Successful logout :/.";
+            TempData["InfoMessage"] = "You have been logged out successfully.";
             return RedirectToAction("Index", "Home");
         }
 
-        // ==========================================
-        // JWT HELPER
-        // ==========================================
-
         private string GenerateToken(User user)
         {
+            var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY")
+                ?? _config["Jwt:Key"]
+                ?? "class-work-5E-your-super-secret-key-minimum-32-characters";
+            var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
+                ?? _config["Jwt:Issuer"]
+                ?? "https://aeronexa.up.railway.app/";
+            var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
+                ?? _config["Jwt:Audience"]
+                ?? "https://aeronexa.up.railway.app/";
+
             var claims = new[]
             {
                 new Claim(ClaimTypes.Name, user.UserName),
@@ -150,15 +125,14 @@ namespace AirlineTicketingSystem.Controllers
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             };
 
-            // Security Note: Use a more secure way to store keys in production (e.g., AppSettings)
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("class-work-5E-your-super-secret-key-minimum-32-characters"));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: "https://localhost:7175/",
-                audience: "https://localhost:7175/",
+                issuer: jwtIssuer,
+                audience: jwtAudience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
+                expires: DateTime.UtcNow.AddHours(8),
                 signingCredentials: creds
             );
 
