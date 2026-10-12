@@ -9,6 +9,8 @@
 
 A role-based airline reservation platform built on ASP.NET Core 8 MVC, with separate **Admin** and **Passenger** experiences, secure session authentication, full booking lifecycle management, automated PDF e-ticket generation, and SQL-driven revenue analytics.
 
+> 🌐 **Live Application:** Hosted live at [https://aeronexa.up.railway.app](https://aeronexa.up.railway.app)
+
 ---
 
 ## ✨ Features
