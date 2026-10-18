@@ -2,12 +2,11 @@
 
 Role-based airline booking system built with ASP.NET Core 8 MVC, Entity Framework Core, dual database support (SQL Server & PostgreSQL), and automated PDF e-tickets.
 
-<!-- add screenshot here -->
+![AeroNexa Preview](docs/aeronexa.png)
 
 ## About
 AeroNexa is a web application designed to handle flight reservations and scheduling. It separates user workflows into dedicated Admin and Passenger experiences using session-based authentication and JWT cookie verification. Passengers can search for flights, book seats, view booking confirmations, and download generated PDF e-tickets. Administrators have access to flight management tools and dashboard analytics to monitor revenue and booking volumes.
 
-<!-- add placement -->
 
 ## Features
 - **Passenger Portal:** Search available flights, select seat classes, enter passenger details, and confirm ticket bookings.
