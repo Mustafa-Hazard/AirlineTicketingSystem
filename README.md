@@ -1,108 +1,98 @@
-# ✈️ AeroNexa — Airline Ticketing System
+# AeroNexa — Airline Ticketing System
 
-![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white)
-![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-MVC-512BD4?logo=dotnet)
-![Entity Framework Core](https://img.shields.io/badge/EF%20Core-ORM-512BD4)
-![SQL Server](https://img.shields.io/badge/MS%20SQL%20Server-Database-CC2927?logo=microsoftsqlserver&logoColor=white)
-![C#](https://img.shields.io/badge/C%23-Language-239120?logo=csharp&logoColor=white)
-![Status](https://img.shields.io/badge/status-active-brightgreen)
+Role-based airline booking system built with ASP.NET Core 8 MVC, Entity Framework Core, dual database support (SQL Server & PostgreSQL), and automated PDF e-tickets.
 
-A role-based airline reservation platform built on ASP.NET Core 8 MVC, with separate **Admin** and **Passenger** experiences, secure session authentication, full booking lifecycle management, automated PDF e-ticket generation, and SQL-driven revenue analytics.
+<!-- add screenshot here -->
 
-> 🌐 **Live Application:** Hosted live at [https://aeronexa.up.railway.app](https://aeronexa.up.railway.app)
+## About
+AeroNexa is a web application designed to handle flight reservations and scheduling. It separates user workflows into dedicated Admin and Passenger experiences using session-based authentication and JWT cookie verification. Passengers can search for flights, book seats, view booking confirmations, and download generated PDF e-tickets. Administrators have access to flight management tools and dashboard analytics to monitor revenue and booking volumes.
 
----
+<!-- add placement -->
 
-## ✨ Features
+## Features
+- **Passenger Portal:** Search available flights, select seat classes, enter passenger details, and confirm ticket bookings.
+- **Automated PDF E-Tickets:** Generates downloadable PDF boarding passes and e-tickets on booking confirmation using QuestPDF (`Pdf/ETicketDocument.cs`).
+- **Email Notifications:** Email service interface and implementation using MailKit and MimeKit (`Services/Interfaces/Implementation/EmailService.cs`).
+- **Admin Management Portal:** Create, update, and cancel flight routes, manage flight schedules, and view all system reservations.
+- **Revenue Analytics:** Admin dashboard displays booking metrics and sales figures calculated through SQL database queries.
+- **Dual Database Architecture:** Supports Microsoft SQL Server for local development and PostgreSQL for production deployments.
 
-| Feature | Description |
+## Tech Stack
+*Stack verified from `AirlineTicketingSystem.csproj`, `Program.cs`, and `appsettings.json`.*
+
+| Layer | Technologies |
 |---|---|
-| 🔐 **Role-Based Access** | Separate Admin and Passenger portals with secure session-based authentication |
-| 🎫 **Booking Lifecycle** | End-to-end flow — search, book, confirm, cancel, and manage reservations |
-| 📄 **Automated E-Tickets** | PDF tickets generated automatically on successful booking |
-| 📊 **Revenue Analytics** | Admin dashboard powered by optimized SQL stored procedures |
-| ✅ **Validated Workflows** | Booking logic tested using equivalence partitioning and boundary value analysis |
+| **Framework & Language** | ASP.NET Core 8 MVC, C# (.NET 8.0) |
+| **ORM & Databases** | Entity Framework Core 8.0, Microsoft SQL Server (`Microsoft.EntityFrameworkCore.SqlServer` for local dev), PostgreSQL (`Npgsql.EntityFrameworkCore.PostgreSQL` for production) |
+| **PDF Generation** | QuestPDF 2025.7.4 |
+| **Auth & Security** | BCrypt.Net-Core 1.6, Microsoft.AspNetCore.Authentication.JwtBearer 8.0 |
+| **Email Services** | MailKit 4.14, MimeKit 4.14 |
+| **Deployment** | Dockerfile, Railway (`railway.json`) |
 
----
+Live application: [https://aeronexa.up.railway.app](https://aeronexa.up.railway.app)
 
-## 🏗️ Tech Stack
-
-- **Framework:** ASP.NET Core 8 MVC
-- **ORM:** Entity Framework Core
-- **Database:** MS SQL Server
-- **Language:** C#
-- **Architecture:** MVC pattern with stored-procedure-backed analytics
-
----
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- MS SQL Server (local instance or Docker container)
-- Visual Studio 2022+ or VS Code with the C# extension
+- .NET 8 SDK
+- Microsoft SQL Server (local) OR PostgreSQL
 
-### Setup
-
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/Mustafa-Hazard/AirlineTicketingSystem.git
 cd AirlineTicketingSystem
 ```
 
-**1. Configure the database connection**
-
-Update `appsettings.json` with your SQL Server connection string:
+### 2. Configure Database
+By default, the application runs on Microsoft SQL Server via `appsettings.json`. Update `ConnectionStrings:DefaultConnection`:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=YOUR_SERVER;Database=AeroNexaDb;Trusted_Connection=True;TrustServerCertificate=True;"
-  }
+    "DefaultConnection": "Server=localhost;Database=AeroNexaDb;Trusted_Connection=True;TrustServerCertificate=True;"
+  },
+  "UsePostgreSQL": false
 }
 ```
+*To use PostgreSQL locally, set `"UsePostgreSQL": true` or provide a `DATABASE_URL` environment variable (the format used automatically when deployed to Railway).*
 
-**2. Apply migrations**
+### 3. Run Migrations & Start Application
 ```bash
 dotnet ef database update
-```
-
-**3. Run the application**
-```bash
 dotnet run
 ```
+The application will launch on `https://localhost:5001` or `http://localhost:5000`.
 
-**4. Open in browser**
+### Environment / Configuration Variables
 
-Navigate to `https://localhost:5001` (or whatever port the console output shows).
+| Key | Environment Variable | Description | Example Placeholder |
+|---|---|---|---|
+| `ConnectionStrings:DefaultConnection` | `DATABASE_URL` | Database connection string (SQL Server or PostgreSQL URL) | `Server=localhost;Database=AeroNexaDb;Trusted_Connection=True;` |
+| `UsePostgreSQL` | N/A | Boolean flag to switch provider to PostgreSQL | `false` |
+| `Jwt:Issuer` | `JWT_ISSUER` | Token issuer identifier | `https://aeronexa.up.railway.app/` |
+| `Jwt:Audience` | `JWT_AUDIENCE` | Token audience identifier | `https://aeronexa.up.railway.app/` |
+| `Jwt:Key` | `JWT_KEY` | Secret key for JWT signing (minimum 32 characters) | `your_secret_key_minimum_32_characters` |
+| `EmailSettings:SmtpServer` | N/A | SMTP host for email dispatch | `smtp.example.com` |
+| `EmailSettings:Username` | N/A | SMTP account username | `user@example.com` |
+| `EmailSettings:Password` | N/A | SMTP account password or app password | `your_email_password` |
 
----
+## Project Structure
+```text
+AirlineTicketingSystem/
+├── Controllers/       # Admin, Booking, Flight, Passenger, and Splash MVC controllers
+├── Data/              # DatabaseContext, DbInitializer, and entity configurations
+├── Migrations/        # Entity Framework Core migrations
+├── Models/            # Domain models (Flight, Booking, Passenger, User, Settings)
+├── Pdf/               # QuestPDF document layout (ETicketDocument.cs)
+├── Services/          # MailKit email service (EmailService.cs)
+├── Views/             # Razor view templates for Admin, Passenger, and Booking flows
+├── Program.cs         # Service registration, DB provider routing, and auth middleware
+└── railway.json       # Railway deployment specification
+```
 
-## 👤 Roles & Access
+## What I Learned & What I Would Improve
+- Configured dynamic runtime database selection in `Program.cs` to switch between SQL Server (local development) and PostgreSQL (Railway deployment).
+- Implemented automated PDF e-ticket generation with QuestPDF and connected email confirmations via MailKit.
+- Future improvements: integrate an external payment gateway, implement seat map selection, and add automated integration test coverage.
 
-| Role | Capabilities |
-|---|---|
-| **Admin** | Manage flights, view revenue analytics, oversee all bookings |
-| **Passenger** | Search flights, book tickets, view/download e-tickets, manage own reservations |
-
----
-
-## 🧪 Testing Approach
-
-Booking workflows were validated using:
-- **Equivalence Partitioning** — grouping valid/invalid input ranges (e.g. seat counts, dates) to test representative cases
-- **Boundary Value Analysis** — testing edge cases at the limits of valid input ranges (e.g. minimum/maximum passengers per booking)
-
----
-
-## 📌 Roadmap Ideas
-
-- [ ] Payment gateway integration
-- [ ] Email notifications for booking confirmations
-- [ ] Multi-currency pricing support
-- [ ] Dockerized deployment
-
----
-
-## 👨‍💻 Author
-
-**Mustafa Muhammad Iqbal**
-[LinkedIn](https://linkedin.com/in/mustafa642) · [GitHub](https://github.com/Mustafa-Hazard)
+## Author
+**Mustafa Muhammad Iqbal** — [GitHub](https://github.com/Mustafa-Hazard) · [LinkedIn](https://linkedin.com/in/mustafa642)
